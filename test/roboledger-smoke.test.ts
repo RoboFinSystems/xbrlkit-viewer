@@ -37,4 +37,19 @@ describe('viewer ↔ library wiring (Mode A, a RoboLedger report)', () => {
     expect(rows.length).toBeGreaterThan(0)
     expect(rows.every((r) => !/^[a-z-]+:[A-Za-z]/.test(r.label ?? r.element.label))).toBe(true)
   })
+
+  it('does not repeat a section title as its own first row', async () => {
+    // rs-gaap gives the income statement a root `IncomeStatementAbstract` and
+    // the other three primaries none, so every RoboLedger report printed
+    // "Income Statement" directly under the heading "Income Statement".
+    // report-components 0.6.0 hides a root abstract that only restates the
+    // title, which is the behavior this pin is here for.
+    const { report } = await parseReportDocument(fixture('roboledger-demo.tavi.json'))
+    for (const table of buildPivots(report)) {
+      const echoes = table.rows.filter(
+        (r) => r.header && (r.label ?? r.element.label) === table.title
+      )
+      expect(echoes, table.title).toHaveLength(0)
+    }
+  })
 })
