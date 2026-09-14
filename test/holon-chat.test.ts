@@ -3,7 +3,12 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { describeReport, EXAMPLE_QUERIES, PREFIX_BLOCK } from '../src/ai/describeReport'
+import {
+  describeReport,
+  exampleQueries,
+  PREFIX_BLOCK,
+  reportSamples,
+} from '../src/ai/describeReport'
 import { buildStore } from '../src/ai/rdf'
 import { runSparql } from '../src/ai/runSparql'
 import { isErrorPayload } from '../src/ai/toolPayload'
@@ -33,21 +38,24 @@ describe('describe_report', () => {
   it('describes the graph the chat queries', () => {
     const described = describeReport(store)
     expect(described).toContain('Report: NVIDIA CORP — form 10-K, fiscal year 2026 FY')
-    expect(described).toMatch(/rs:Fact: .*rs:element ×\d+/)
-    expect(described).toMatch(/rs:Association: .*link:weight ×\d+/)
+    expect(described).toMatch(/rs:Fact ×\d+: .*rs:element ×\d+/)
+    expect(described).toMatch(/rs:Association ×\d+: .*link:weight ×\d+/)
     expect(described).toMatch(/us-gaap:\w+ → ".+" \(\d+ facts\)/)
     expect(described).toContain('more concepts — find one by label with example query 1.')
     expect(described).toMatch(/\d{4}-\d{2}-\d{2} → \d{4}-\d{2}-\d{2} \(annual\): \d+ facts/)
     expect(described).toMatch(/iso4217:USD: \d+ facts/)
-    for (const [, query] of EXAMPLE_QUERIES) expect(described).toContain(query)
+    for (const [, query] of exampleQueries(reportSamples(store))) expect(described).toContain(query)
   })
 })
 
 describe('run_sparql', () => {
   it('runs every example query the model is handed', async () => {
-    for (const [why, query] of EXAMPLE_QUERIES) {
+    for (const [why, query] of exampleQueries(reportSamples(store))) {
       const payload = await runSparql(store, `${PREFIX_BLOCK}\n${query}`)
       expect(isErrorPayload(payload), why).toBe(false)
+      // Derived from this graph, so each one must also FIND something — an
+      // example that returns nothing reads as a broken graph, not a pattern.
+      expect(parse(payload).row_count, why).toBeGreaterThan(0)
     }
   }, 60_000)
 

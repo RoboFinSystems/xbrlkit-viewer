@@ -6,7 +6,7 @@ import { createRequire } from 'node:module'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { describeModel, EXAMPLE_QUERIES } from '../src/ai/describeModel'
+import { describeModel, exampleQueries, modelSamples } from '../src/ai/describeModel'
 import { evaluateJq } from '../src/ai/runJq'
 import { isErrorPayload } from '../src/ai/toolPayload'
 
@@ -43,15 +43,18 @@ describe('describe_model', () => {
     expect(described).toContain('Periods present')
     expect(described).toContain('Units present')
     expect(described).toContain('Groups (statements and notes')
-    for (const [, program] of EXAMPLE_QUERIES) expect(described).toContain(program)
+    for (const [, program] of exampleQueries(modelSamples(doc.xbrlModel ?? {})))
+      expect(described).toContain(program)
   })
 })
 
 describe('run_jq', () => {
   it('runs every example program the model is handed', () => {
-    for (const [why, program] of EXAMPLE_QUERIES) {
+    for (const [why, program] of exampleQueries(modelSamples(doc.xbrlModel ?? {}))) {
       const payload = evaluateJq(jq, text, program)
       expect(isErrorPayload(payload), why).toBe(false)
+      // Derived from this document, so each one must also FIND something.
+      expect(parse(payload).result_count, why).toBeGreaterThan(0)
     }
   })
 

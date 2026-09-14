@@ -23,6 +23,7 @@ coverage/
 
 # Fixtures (verbatim sample data — don't reformat)
 public/samples/
+test/fixtures/
 
 # GitHub
 .github/

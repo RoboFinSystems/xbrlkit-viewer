@@ -27,61 +27,148 @@ const CONCEPTS_LISTED = 40
 const GROUPS_LISTED = 80
 const AXES_LISTED = 25
 
+/**
+ * The concepts, period and group the example programs are written against.
+ *
+ * Read from the document rather than hardcoded. A filing's concepts are
+ * `us-gaap:`, a RoboLedger report's are `rs-gaap:` plus the tenant's own, and
+ * its group URIs are nothing like an SEC role — so a fixed `us-gaap:Revenues`
+ * and a `test("ConsolidatedStatementofIncome")` made those programs return
+ * nothing, under a header telling the model they are working patterns to start
+ * from.
+ */
+export interface ModelSamples {
+  /** The most-reported concept's QName. */
+  concept: string
+  /** A substring of a real standard label, for the find-by-label program. */
+  labelTerm: string
+  /** A concept that is the source of summation-item relationships. */
+  subtotal: string
+  /** A concept that some parent-child network targets. */
+  presented: string
+  /** An `xbrl:period` value present on a fact, or ''. */
+  period: string
+  /** A fragment matching one group's URI, for the statement program. */
+  groupUriTerm: string
+  /** True when some fact carries a non-core dimension. */
+  hasDimensions: boolean
+}
+
+/** Read the example programs' subjects out of the document they will run on. */
+export function modelSamples(model: TaviModel): ModelSamples {
+  const conceptCounts = tally(
+    facts(model)
+      .map((f) => dimension(f, 'xbrl:concept'))
+      .filter((c): c is string => Boolean(c))
+  )
+  const concept = mostCommon(conceptCounts, 1)[0]?.[0] ?? ''
+  const labels = standardLabels(model)
+  const longestWord = (labels.get(concept) ?? '')
+    .split(/[^A-Za-z]+/)
+    .filter((w) => w.length > 3)
+    .sort((a, b) => b.length - a.length)[0]
+
+  const summation = (model.networks ?? []).filter(
+    (n) => n.relationshipTypeName === 'xbrl:summation-item'
+  )
+  const subtotal =
+    summation
+      .flatMap((n) => n.relationships ?? [])
+      .find((r) => r.source && r.source !== 'xbrl:rootSource')?.source ?? concept
+  const presented =
+    (model.networks ?? [])
+      .filter((n) => n.relationshipTypeName === 'xbrl:parent-child')
+      .flatMap((n) => n.relationships ?? [])
+      .find((r) => r.target && r.target !== concept)?.target ?? concept
+
+  const period = facts(model)
+    .map((f) => dimension(f, 'xbrl:period'))
+    .filter((x): x is string => Boolean(x))
+    .sort()
+    .pop()
+
+  // A distinctive fragment of a real group URI — its last path segment, which is
+  // the role name in both an SEC role and a RoboLedger one.
+  const groupUri = (model.groups ?? [])[0]?.groupURI ?? ''
+  const hasDimensions = facts(model).some((f) =>
+    Object.keys(f.factDimensions ?? {}).some((k) => !CORE_DIMENSIONS.has(k))
+  )
+  return {
+    concept,
+    labelTerm: (longestWord ?? labels.get(concept) ?? '').toLowerCase(),
+    subtotal,
+    presented,
+    period: period ?? '',
+    groupUriTerm: groupUri.split('/').filter(Boolean).pop() ?? groupUri,
+    hasDimensions,
+  }
+}
+
 /** Working jq programs for an xbrlkit Tavi document, each with the why. */
-export const EXAMPLE_QUERIES: ReadonlyArray<readonly [string, string]> = [
-  [
-    'Find a concept by its label (the QName is what every other query needs). Labels are free-standing objects pointing at the concept through forObject; xbrl:label is the standard label.',
-    `[.xbrlModel.labels[]
-  | select(.labelType == "xbrl:label" and (.value | ascii_downcase | contains("property, plant")))
+export function exampleQueries(samples: ModelSamples): ReadonlyArray<readonly [string, string]> {
+  const examples: Array<readonly [string, string]> = [
+    [
+      'Find a concept by its label (the QName is what every other query needs). Labels are free-standing objects pointing at the concept through forObject; xbrl:label is the standard label.',
+      `[.xbrlModel.labels[]
+  | select(.labelType == "xbrl:label" and (.value | ascii_downcase | contains("${samples.labelTerm}")))
   | {concept: .forObject, label: .value}]`,
-  ],
-  [
-    "Consolidated (undimensioned) values of one concept. A fact's factDimensions carries the core dimensions under xbrl:* keys and every taxonomy axis as a further key, so the consolidated total is the fact with no non-xbrl key. Values are strings: use tonumber.",
-    `[.xbrlModel.facts[]
-  | select(.factDimensions["xbrl:concept"] == "us-gaap:Revenues")
+    ],
+    [
+      "Consolidated (undimensioned) values of one concept. A fact's factDimensions carries the core dimensions under xbrl:* keys and every taxonomy axis as a further key, so the consolidated total is the fact with no non-xbrl key. Values are strings: use tonumber.",
+      `[.xbrlModel.facts[]
+  | select(.factDimensions["xbrl:concept"] == "${samples.concept}")
   | select([.factDimensions | keys[] | select(startswith("xbrl:") | not)] | length == 0)
   | {period: .factDimensions["xbrl:period"], unit: .factDimensions["xbrl:unit"],
      value: (.factValues[0].value | tonumber), decimals: .factValues[0].decimals}]
 | sort_by(.period) | reverse`,
-  ],
-  [
-    'The dimensional breakdown of a concept for one period: the non-core keys of factDimensions are the axes, their values the members.',
-    `[.xbrlModel.facts[]
-  | select(.factDimensions["xbrl:concept"] == "us-gaap:Revenues"
-           and .factDimensions["xbrl:period"] == "2024-01-01T00:00:00/2025-01-01T00:00:00")
+    ],
+  ]
+  // Only offered when this document has a breakdown to find — on an all-
+  // consolidated report the program is sound but returns nothing, which reads
+  // as a broken document.
+  if (samples.hasDimensions) {
+    examples.push([
+      'The dimensional breakdown of a concept for one period: the non-core keys of factDimensions are the axes, their values the members.',
+      `[.xbrlModel.facts[]
+  | select(.factDimensions["xbrl:concept"] == "${samples.concept}"
+           and .factDimensions["xbrl:period"] == "${samples.period}")
   | {axes: (.factDimensions | with_entries(select(.key | startswith("xbrl:") | not))),
      value: (.factValues[0].value | tonumber)}]`,
-  ],
-  [
-    'What sums to a concept: its calculation children with weights. Networks hold relationships; xbrl:summation-item networks carry xbrl:weight as a relationship property; a relationship from xbrl:rootSource marks a root.',
-    `[.xbrlModel.networks[]
+    ])
+  }
+  examples.push(
+    [
+      'What sums to a concept: its calculation children with weights. Networks hold relationships; xbrl:summation-item networks carry xbrl:weight as a relationship property; a relationship from xbrl:rootSource marks a root.',
+      `[.xbrlModel.networks[]
   | select(.relationshipTypeName == "xbrl:summation-item")
   | .relationships[]
-  | select(.source == "us-gaap:OperatingIncomeLoss")
+  | select(.source == "${samples.subtotal}")
   | {child: .target, order,
      weight: ([.properties[]? | select(.property == "xbrl:weight") | .value] | first)}]`,
-  ],
-  [
-    "Which statements or notes a concept is presented on: presentation networks belong to groups (groupContents), and a group's readable name is its xbrl:label.",
-    `(.xbrlModel.labels | map(select(.labelType == "xbrl:label")) | map({(.forObject): .value}) | add) as $lbl
+    ],
+    [
+      "Which statements or notes a concept is presented on: presentation networks belong to groups (groupContents), and a group's readable name is its xbrl:label.",
+      `(.xbrlModel.labels | map(select(.labelType == "xbrl:label")) | map({(.forObject): .value}) | add) as $lbl
 | [.xbrlModel.networks[]
   | select(.relationshipTypeName == "xbrl:parent-child")
-  | select(any(.relationships[]; .target == "us-gaap:Goodwill"))
+  | select(any(.relationships[]; .target == "${samples.presented}"))
   | .name] as $nets
 | [.xbrlModel.groupContents[] | select(.forObject as $n | $nets | index($n)) | $lbl[.groupName]]`,
-  ],
-  [
-    'The line items of one statement, in presentation order with the label the statement uses (xbrl:preferredLabel names a label type; fall back to the standard label).',
-    `(.xbrlModel.labels | map({(.forObject + "|" + .labelType): .value}) | add) as $lbl
-| (.xbrlModel.groups[] | select(.groupURI | test("ConsolidatedStatementofIncome")) | .name) as $g
+    ],
+    [
+      'The line items of one statement, in presentation order with the label the statement uses (xbrl:preferredLabel names a label type; fall back to the standard label).',
+      `(.xbrlModel.labels | map({(.forObject + "|" + .labelType): .value}) | add) as $lbl
+| (.xbrlModel.groups[] | select(.groupURI | test("${samples.groupUriTerm}")) | .name) as $g
 | [.xbrlModel.groupContents[] | select(.groupName == $g) | .forObject] as $members
 | .xbrlModel.networks[] | select((.name as $n | $members | index($n)) and .relationshipTypeName == "xbrl:parent-child")
 | [.relationships[] | select(.source != "xbrl:rootSource")
    | {parent: .source, concept: .target, order,
       label: ($lbl[.target + "|" + (([.properties[]? | select(.property == "xbrl:preferredLabel") | .value] | first) // "xbrl:label")]
               // $lbl[.target + "|xbrl:label"])}]`,
-  ],
-]
+    ]
+  )
+  return examples
+}
 
 export function describeModel(doc: TaviDocument): string {
   const model: TaviModel = doc.xbrlModel ?? {}
@@ -93,7 +180,10 @@ export function describeModel(doc: TaviDocument): string {
   const prefixes = Object.entries(namespaces)
     .map(([prefix, iri]) => `${prefix} → ${iri}`)
     .join(', ')
-  const examples = EXAMPLE_QUERIES.map(([why, program]) => `# ${why}\n${program}`).join('\n\n')
+  const samples = modelSamples(model)
+  const examples = exampleQueries(samples)
+    .map(([why, program]) => `# ${why}\n${program}`)
+    .join('\n\n')
 
   return `This is ONE financial report as a Project Tavi compiled model (XBRL International's OIM Taxonomy
 Model): a single JSON document holding the facts AND the taxonomy that gives them meaning, queryable
@@ -162,8 +252,23 @@ function mostCommon(counts: Map<string, number>, limit = Infinity): [string, num
     .slice(0, limit)
 }
 
+/**
+ * What this report is and whose it is.
+ *
+ * An entity's SQName is `entity:entity_kg1a09d9…` in a RoboLedger model — its
+ * readable name is a free-standing `xbrl:label`, the same place the Tavi adapter
+ * reads it from. A filing's registrant has a label too, so preferring it is
+ * right either way; the SQName follows in parentheses since queries need it.
+ */
 function entityLine(model: TaviModel): string {
-  const entities = (model.entities ?? []).map((e) => e.name).join(', ') || '?'
+  const labels = standardLabels(model)
+  const entities =
+    (model.entities ?? [])
+      .map((e) => {
+        const label = labels.get(e.name)
+        return label ? `${label} (${e.name})` : e.name
+      })
+      .join(', ') || '?'
   const filed = (model.properties ?? []).find((p) => p.property === 'xbrl:reportFilingDate')?.value
   return `Report: ${model.name ?? '?'} — entity ${entities}${filed ? `, filed ${String(filed)}` : ''}`
 }
