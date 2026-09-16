@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LANES, laneFromLocation, laneFromPath, pathForLane } from '../src/pages/route'
+import { laneFromLocation, laneFromPath, LANES, pathForLane, VIEW_PATH } from '../src/pages/route'
 
 const CDN = 'https://public.robosystems.ai/2025/0001045810/0001045810-25-000023/tavi.json'
 
@@ -9,7 +9,7 @@ describe('laneFromLocation', () => {
     expect(laneFromLocation('', '')).toBe('sec')
   })
 
-  // `xbrlkit view` and the SEC catalog both write `/?url=`; it must keep opening the report.
+  // The SEC catalog and earlier xbrlkit releases write `/?url=`; it must keep opening the report.
   it('opens a linked report on the apex in the File lane', () => {
     expect(laneFromLocation('/', `?url=${encodeURIComponent(CDN)}`)).toBe('file')
     expect(laneFromLocation('/index.html', `?url=${encodeURIComponent(CDN)}`)).toBe('file')
@@ -58,5 +58,22 @@ describe('laneFromPath', () => {
     const search = `?url=${encodeURIComponent(CDN)}`
     expect(laneFromLocation('/', search)).toBe('file')
     expect(laneFromPath('/')).toBe('sec')
+  })
+})
+
+// `xbrlkit view` and `view_filing` open `/view?url=`; installed releases depend on it.
+describe('the /view link path', () => {
+  it('opens a linked report in the File lane', () => {
+    expect(VIEW_PATH).toBe('/view')
+    expect(laneFromLocation('/view', `?url=${encodeURIComponent(CDN)}`)).toBe('file')
+    expect(laneFromLocation('/view/', `?url=${encodeURIComponent(CDN)}`)).toBe('file')
+  })
+
+  it('carries the apex head, so the canonical stays /', () => {
+    expect(laneFromPath('/view')).toBe('sec')
+  })
+
+  it('is the SEC lane without a link', () => {
+    expect(laneFromLocation('/view', '')).toBe('sec')
   })
 })

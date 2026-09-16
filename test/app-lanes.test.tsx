@@ -38,6 +38,12 @@ describe('the lane an address opens', () => {
     expect(html).toMatch(/role="tab" aria-selected="true">File</)
   })
 
+  it('opens a /view?url= link from xbrlkit view in the File lane', () => {
+    const html = renderAt(`/view?url=${encodeURIComponent(CDN)}`)
+    expect(html).toContain(FILE_DROPZONE)
+    expect(html).not.toContain(SEC_SEARCH)
+  })
+
   it('opens the File and MCP lanes at their own paths', () => {
     expect(renderAt('/file')).toContain(FILE_DROPZONE)
     expect(renderAt('/mcp')).toContain(MCP_HEADING)
