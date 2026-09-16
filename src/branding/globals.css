@@ -1,5 +1,5 @@
-/* xbrlkit viewer branding — the RoboSystems palette and fonts, since the
- * viewer is a RoboSystems project.
+/* xbrlkit.com branding — the RoboSystems palette and fonts, since the site
+ * is a RoboSystems project.
  *
  * Palette + fonts copied from the RoboSystems app (see BRANDING.md). The
  * `--rs-*` custom properties below are also what `@robosystems/report-components`
@@ -143,17 +143,14 @@ body {
   gap: 0.75rem;
 }
 
+/* The wordmark is "xbrlkit", lowercase like the package. The viewer is the
+ * site's main function, not its name — "viewer" left the header when /mcp
+ * gave the site a second function. */
 .brand-name {
   font-family: var(--rs-font-heading);
   font-weight: 700;
   font-size: 1.05rem;
   letter-spacing: 0.04em;
-}
-
-/* The wordmark is "xbrlkit", lowercase like the package; "viewer" is the tool. */
-.brand-name-tool {
-  font-weight: 400;
-  opacity: 0.85;
 }
 
 .mode-switch {
@@ -1188,4 +1185,98 @@ body {
 .app-main:has(.sectioned-report) {
   max-width: none;
   padding: 1.5rem 1.5rem 4rem;
+}
+
+/* ── MCP page (`/mcp`) ── */
+.mcp-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2rem 2.25rem 2.5rem;
+  background: #ffffff;
+  border: 1px solid var(--rs-border);
+  border-radius: 16px;
+  line-height: 1.55;
+}
+
+.mcp-page h2 {
+  font-family: var(--rs-font-heading);
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+}
+
+.mcp-page h3 {
+  margin: 2rem 0 0.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mcp-page p,
+.mcp-page li {
+  margin: 0 0 0.75rem;
+  color: var(--rs-gray-700);
+}
+
+.mcp-page ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.mcp-page code {
+  padding: 0.05rem 0.3rem;
+  border-radius: 4px;
+  background: var(--rs-gray-200);
+  font-family: var(--rs-font-mono);
+  font-size: 0.85em;
+}
+
+.mcp-page a {
+  color: var(--rs-primary-700);
+}
+
+.mcp-foot {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--rs-border);
+  font-size: 0.85rem;
+}
+
+.mcp-foot p {
+  margin: 0;
+}
+
+/* A recipe with its Copy button. */
+.code-block {
+  margin: 0.75rem 0 1rem;
+}
+
+.code-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.code-block pre {
+  overflow-x: auto;
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--rs-border);
+  border-radius: 8px;
+  background: var(--rs-gray-50);
+  font-family: var(--rs-font-mono);
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+
+.code-block pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+@media (max-width: 600px) {
+  .mcp-page {
+    padding: 1.5rem 1.25rem 2rem;
+  }
 }
