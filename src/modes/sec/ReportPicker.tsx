@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
-import { listReports, type SecEntity, type SecFiling } from '../../sec/client'
+import {
+  type CatalogFiling,
+  type FilerRow,
+  fetchFiler,
+  periodOf,
+  reportFileUrl,
+} from '../../sec/catalog'
 
 interface ReportPickerProps {
-  entity: SecEntity
-  onSelect: (filing: SecFiling) => void
+  filer: FilerRow
+  onSelect: (filing: CatalogFiling) => void
 }
 
 function formatDate(iso: string | null): string {
@@ -27,9 +33,13 @@ function formatDate(iso: string | null): string {
   return `${months[Number(m[2]) - 1]} ${Number(m[3])}, ${m[1]}`
 }
 
-/** Step 3 — the selected company's filings, most recent first. Pick one to render. */
-export function ReportPicker({ entity, onSelect }: ReportPickerProps) {
-  const [filings, setFilings] = useState<SecFiling[]>([])
+/**
+ * The selected filer's filings, newest first, from its catalog file on the
+ * CDN. Pick one to open its Tavi model or holon; a filing whose artifacts are
+ * not written yet is listed but cannot be opened.
+ */
+export function ReportPicker({ filer, onSelect }: ReportPickerProps) {
+  const [filings, setFilings] = useState<CatalogFiling[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -38,13 +48,13 @@ export function ReportPicker({ entity, onSelect }: ReportPickerProps) {
     setLoading(true)
     setError(null)
     setFilings([])
-    listReports(entity.cik)
-      .then((rows) => {
+    fetchFiler(filer.ticker)
+      .then((catalog) => {
         if (cancelled) return
-        setFilings(rows)
+        setFilings(catalog?.filings ?? [])
         setLoading(false)
       })
-      .catch((e) => {
+      .catch((e: unknown) => {
         if (cancelled) return
         setError(e instanceof Error ? e.message : String(e))
         setLoading(false)
@@ -52,13 +62,13 @@ export function ReportPicker({ entity, onSelect }: ReportPickerProps) {
     return () => {
       cancelled = true
     }
-  }, [entity.cik])
+  }, [filer.ticker])
 
   return (
     <div className="sec-filings">
       <div className="sec-filings-head">
-        Filings for <strong>{entity.name}</strong>
-        {entity.ticker ? <span className="hint"> · {entity.ticker}</span> : null}
+        Filings for <strong>{filer.name}</strong>
+        <span className="hint"> · {filer.ticker}</span>
       </div>
 
       {loading ? (
@@ -68,25 +78,30 @@ export function ReportPicker({ entity, onSelect }: ReportPickerProps) {
       ) : error ? (
         <div className="error">{error}</div>
       ) : filings.length === 0 ? (
-        <div className="hint">No filings found for this company.</div>
+        <div className="hint">No filings listed for this company.</div>
       ) : (
         <ul className="filing-list">
-          {filings.map((f) => (
-            <li key={f.reportId}>
-              <button type="button" className="filing-item" onClick={() => onSelect(f)}>
-                <span className="filing-form">{f.form}</span>
-                <span className="filing-meta">
-                  <span className="filing-date">Filed {formatDate(f.filingDate)}</span>
-                  {f.fiscalYear ? (
-                    <span className="filing-fy">
-                      FY{f.fiscalYear}
-                      {f.fiscalPeriod && f.fiscalPeriod !== 'FY' ? ` ${f.fiscalPeriod}` : ''}
-                    </span>
-                  ) : null}
-                </span>
-              </button>
-            </li>
-          ))}
+          {filings.map((f) => {
+            const openable = reportFileUrl(f) !== null
+            return (
+              <li key={f.accession}>
+                <button
+                  type="button"
+                  className="filing-item"
+                  disabled={!openable}
+                  title={openable ? undefined : 'Artifacts pending'}
+                  onClick={() => onSelect(f)}
+                >
+                  <span className="filing-form">{f.form}</span>
+                  <span className="filing-meta">
+                    {periodOf(f) ? <span className="filing-fy">{periodOf(f)}</span> : null}
+                    <span className="filing-date">Filed {formatDate(f.filing_date)}</span>
+                    {!openable ? <span className="hint">artifacts pending</span> : null}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>

@@ -28,7 +28,7 @@ Use `preview` when you're debugging something that only reproduces in the built 
 There's no health endpoint to curl; the app either renders a report or it doesn't. So:
 
 1. **File mode** — open a local `holon.jsonld`. This path must work **fully offline**: no API key, no network call. If you're changing anything near loading or rendering, test with the network throttled to offline and confirm it still renders.
-2. **SEC mode** — needs a RoboSystems API key entered in the keys drawer, and makes the authenticated call client-side.
+2. **SEC mode** — needs no key: it reads the filer catalog and each filing's `tavi.json` / `holon.jsonld` from the public data CDN (`VITE_FILINGS_CDN_URL`, production by default) straight from the browser. Search a ticker, open a filing, confirm it renders and the chat answers over it.
 3. **AI / voice** — need Anthropic and ElevenLabs keys respectively, entered the same way. These spend real money per call; don't loop them while debugging.
 
 Sample holons come from `xbrlkit` (`xbrlkit build …`) — generate one rather than hunting for a fixture if you need a specific filing shape.

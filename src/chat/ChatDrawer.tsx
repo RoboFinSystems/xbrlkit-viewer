@@ -3,13 +3,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { AnthropicProvider } from '../ai/anthropic'
-import { cypherBackend } from '../ai/backends/cypher'
 import { jqBackend } from '../ai/backends/jq'
 import { sparqlBackend } from '../ai/backends/sparql'
 import { workerJqRunner } from '../ai/jqRunner'
 import { type ChatBackend, runToolLoop } from '../ai/loop'
 import type { AIMessage } from '../ai/provider'
-import { type SecReportContext, SUMMARY_PROMPT, secContextNote } from '../ai/reportContext'
+import { SUMMARY_PROMPT } from '../ai/reportContext'
 import type { ReportSource } from '../ai/source'
 import { stripMarkdown } from '../ai/tts'
 import { Spinner } from '../components/Spinner'
@@ -23,20 +22,18 @@ interface ChatTurn {
   error?: boolean
   /** The query the loop generated for this answer (assistant turns). */
   query?: string
-  /** 'SPARQL' | 'jq' | 'Cypher' — labels the query reveal. */
+  /** 'SPARQL' | 'jq' — labels the query reveal. */
   queryLabel?: string
 }
 
 interface ChatDrawerProps {
   open: boolean
   onClose: () => void
-  /** Current source mode — picks a local file backend vs Cypher (SEC). */
+  /** Current source tab — only decides which "open a report" hint to show. */
   mode: 'file' | 'sec'
-  /** File mode: the loaded report + its queryable form (RDF store or Tavi document). */
+  /** The loaded report + its queryable form (RDF store or Tavi document). */
   report: NormalizedReport | null
   source: ReportSource | null
-  /** SEC mode: the filing on screen (or null), so the chat can key on it. */
-  secContext: SecReportContext | null
   /** Open the Keys drawer — where the Anthropic (and other) keys are entered. */
   onOpenSettings: () => void
 }
@@ -44,14 +41,13 @@ interface ChatDrawerProps {
 const SUMMARY_DISPLAY = 'Give me a business summary of this report.'
 
 /**
- * Mode-agnostic chat drawer — a right-side panel that pushes the content aside.
- * It picks a `ChatBackend` by source: a holon → SPARQL over the in-memory RDF;
- * a Tavi model → jq over the document in a worker; SEC → read-only Cypher over
- * the live graph. Keys are entered in the Keys drawer.
+ * The chat drawer — a right-side panel that pushes the content aside. It picks
+ * a `ChatBackend` by the loaded report's own form: a holon → SPARQL over the
+ * in-memory RDF; a Tavi model → jq over the document in a worker. Both tabs
+ * load a report the same way, so the chat never leaves the browser. Keys are
+ * entered in the Keys drawer.
  *
- * Two report-aware extras: a one-click business **Summary** on the empty state
- * (keyed on the report in context — always injected for SEC), and, in SEC mode,
- * a **Pin report** toggle that anchors ordinary questions on the open filing.
+ * One report-aware extra: a one-click business **Summary** on the empty state.
  * With an ElevenLabs key set, answers can be read aloud (and the summary auto-
  * plays).
  */
@@ -61,18 +57,15 @@ export function ChatDrawer({
   mode,
   report,
   source,
-  secContext,
   onOpenSettings,
 }: ChatDrawerProps) {
   const llm = usePersistentApiKey('llm')
-  const sec = usePersistentApiKey('sec')
   const { model } = usePersistentModel()
   const tts = useTts()
   const [turns, setTurns] = useState<ChatTurn[]>([])
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
   const [status, setStatus] = useState('Thinking')
-  const [pinned, setPinned] = useState(false)
   // Which assistant turn is currently being read aloud (null = none).
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -80,19 +73,17 @@ export function ChatDrawer({
   const provider = useMemo(() => (llm.key ? new AnthropicProvider(llm.key) : null), [llm.key])
 
   const backend = useMemo<ChatBackend | null>(() => {
-    if (mode === 'sec') return sec.key ? cypherBackend(sec.key, 'sec') : null
     if (!report || !source) return null
     return source.format === 'holon'
       ? sparqlBackend(source.store)
       : jqBackend(source.doc, workerJqRunner(source.text))
-  }, [mode, sec.key, report, source])
+  }, [report, source])
 
   // A replaced backend releases what it holds (the jq worker and its document).
   useEffect(() => () => backend?.dispose?.(), [backend])
 
-  // A report is "in context" when the summary makes sense: a loaded file, or an
-  // open SEC filing.
-  const hasReportContext = mode === 'sec' ? Boolean(secContext) : Boolean(report)
+  // A report is "in context" when the summary makes sense: one is loaded.
+  const hasReportContext = Boolean(report)
 
   // Playback ends (or errors) → drop the per-message speaking highlight.
   useEffect(() => {
@@ -104,10 +95,6 @@ export function ChatDrawer({
       if (busy || !provider || !backend) return
       const { summary = false, display = question } = opts
       const history: AIMessage[] = turns.map((t) => ({ role: t.role, content: t.text }))
-      // Anchor on the open SEC filing for the summary always, or for ordinary
-      // questions only when the user has pinned it.
-      const useContext = mode === 'sec' && secContext && (pinned || summary)
-      const contextNote = useContext ? secContextNote(secContext) : undefined
       const assistantIdx = turns.length + 1
 
       setTurns((prev) => [...prev, { role: 'user', text: display }])
@@ -115,7 +102,6 @@ export function ChatDrawer({
       setBusy(true)
       try {
         const res = await runToolLoop(provider, backend, history, question, {
-          contextNote,
           onProgress: setStatus,
           model,
         })
@@ -139,7 +125,7 @@ export function ChatDrawer({
         })
       }
     },
-    [busy, provider, backend, turns, mode, secContext, pinned, tts, model]
+    [busy, provider, backend, turns, tts, model]
   )
 
   const send = useCallback(() => {
@@ -162,33 +148,17 @@ export function ChatDrawer({
     [speakingIdx, tts]
   )
 
-  const title = mode === 'sec' ? 'Ask the SEC graph' : 'Ask about this report'
+  const title = 'Ask about this report'
   const canChat = Boolean(provider && backend)
-  const showPin = mode === 'sec' && Boolean(secContext) && canChat
 
-  // Empty-state copy + tap-to-run example questions, tailored to the mode (and,
-  // in SEC mode, to the filing on screen).
-  const who = secContext?.ticker ?? secContext?.entityName ?? ''
+  // Empty-state copy + tap-to-run example questions.
   const emptyLead =
-    mode === 'sec'
-      ? secContext
-        ? `Ask anything about ${who}, or explore the wider SEC graph — answers come straight from the filing data.`
-        : 'Ask about any public company in the SEC EDGAR graph. Answers are pulled straight from the filings — never guessed.'
-      : 'Ask about this report and get answers pulled straight from its own figures — never guessed. Start with a question, or get a quick summary.'
-  const examples =
-    mode === 'sec'
-      ? secContext
-        ? [
-            `What was ${who}'s revenue?`,
-            `Summarize ${who}'s financials`,
-            `Biggest year-over-year changes?`,
-          ]
-        : [
-            'What was NVIDIA’s revenue in fiscal 2024?',
-            'Compare Apple and Microsoft’s net income',
-            'Which companies have the highest total assets?',
-          ]
-      : ['What is total assets?', 'What was net income?', 'How does this year compare to last?']
+    'Ask about this report and get answers pulled straight from its own figures — never guessed. Start with a question, or get a quick summary.'
+  const examples = [
+    'What is total assets?',
+    'What was net income?',
+    'How does this year compare to last?',
+  ]
 
   return (
     <aside className={open ? 'chat-drawer open' : 'chat-drawer'} inert={!open}>
@@ -290,7 +260,8 @@ export function ChatDrawer({
           <p className="hint chat-connect">
             {mode === 'sec' ? (
               <>
-                Connect to the SEC graph in the <strong>Graph</strong> tab first.
+                Search a company and open a filing in the <strong>SEC</strong> tab, then ask about
+                it.
               </>
             ) : (
               <>
@@ -301,20 +272,6 @@ export function ChatDrawer({
           </p>
         ) : (
           <>
-            {showPin ? (
-              <label className="chat-pin">
-                <input
-                  type="checkbox"
-                  checked={pinned}
-                  onChange={(e) => setPinned(e.target.checked)}
-                />
-                <span>
-                  {pinned
-                    ? `Pinned to ${secContext?.ticker ?? secContext?.entityName}`
-                    : 'Pin this report to focus answers'}
-                </span>
-              </label>
-            ) : null}
             <form
               className="chat-input"
               onSubmit={(e) => {

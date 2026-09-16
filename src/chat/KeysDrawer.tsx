@@ -1,12 +1,9 @@
 /**
  * The Keys & settings drawer — one place to enter, check, and clear every BYO
- * key the app uses: RoboSystems (SEC graph), Anthropic (chat), and ElevenLabs
- * (voice). Same right-side shell as the chat "Ask" drawer. Keys persist via
- * `usePersistentApiKey`; nothing is sent to this app's origin.
- *
- * The RoboSystems key is validated live (lists graphs, confirms SEC access) so
- * the user gets a real "Connected" signal here instead of finding out on the SEC
- * tab. Anthropic has no free validation endpoint, so it just reports "Saved".
+ * key the app uses: Anthropic (chat) and ElevenLabs (voice). Same right-side
+ * shell as the chat "Ask" drawer. Keys persist via `usePersistentApiKey`;
+ * nothing is sent to this app's origin. Anthropic has no free validation
+ * endpoint, so a saved key just reports "Saved".
  */
 import { type ReactNode, useEffect, useState } from 'react'
 import { MODELS } from '../ai/models'
@@ -16,7 +13,6 @@ import { Spinner } from '../components/Spinner'
 import { type PersistentApiKey, usePersistentApiKey } from '../hooks/usePersistentApiKey'
 import { usePersistentModel } from '../hooks/usePersistentModel'
 import { usePersistentVoicePreset } from '../hooks/usePersistentVoicePreset'
-import { validateSecKey } from '../sec/client'
 
 interface KeysDrawerProps {
   open: boolean
@@ -242,7 +238,6 @@ function VoiceIdRow({ voice }: { voice: PersistentApiKey }) {
 }
 
 export function KeysDrawer({ open, onClose }: KeysDrawerProps) {
-  const sec = usePersistentApiKey('sec')
   const llm = usePersistentApiKey('llm')
   const eleven = usePersistentApiKey('elevenlabs')
   const voice = usePersistentApiKey('elevenlabs-voice')
@@ -272,20 +267,6 @@ export function KeysDrawer({ open, onClose }: KeysDrawerProps) {
             Bring your own keys. Each is stored only in this browser and sent directly to its
             provider when used — never to this app.
           </p>
-
-          <KeyRow
-            title="RoboSystems"
-            blurb="Unlocks the SEC EDGAR graph (search filings, ask the graph). Validated on save."
-            apiKey={sec}
-            placeholder="rfs…"
-            savedLabel="Saved"
-            validate={async (value) => {
-              const repo = await validateSecKey(value)
-              return repo
-                ? { ok: true, message: `Connected — ${repo.graphName}` }
-                : { ok: false, message: 'Valid key, but it has no access to the SEC repository.' }
-            }}
-          />
 
           <KeyRow
             title="Anthropic"

@@ -1,22 +1,23 @@
 import { useEffect, useRef, useState } from 'react'
-import { searchEntities, type SecEntity } from '../../sec/client'
+import { type FilerRow, loadFilerIndex, searchFilers } from '../../sec/catalog'
 
 interface TickerSearchProps {
-  onSelect: (entity: SecEntity) => void
-  /** The currently-selected company, shown as the input's resting value. */
-  selected: SecEntity | null
+  onSelect: (filer: FilerRow) => void
+  /** The currently-selected filer, shown as the input's resting value. */
+  selected: FilerRow | null
 }
 
 /**
- * Company search — type a ticker or a name; a debounced Cypher lookup (ticker
- * prefix OR name substring) fills the dropdown. Keyboard: ↑/↓ to move, Enter to
- * pick, Esc to close.
+ * Filer search — type a ticker or a name. The filer index is fetched once, on
+ * the first search, and matched in memory: ticker first, then name. Keyboard:
+ * ↑/↓ to move, Enter to pick, Esc to close.
  */
 export function TickerSearch({ onSelect, selected }: TickerSearchProps) {
   const [term, setTerm] = useState('')
-  const [results, setResults] = useState<SecEntity[]>([])
+  const [results, setResults] = useState<FilerRow[]>([])
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [active, setActive] = useState(0)
   const boxRef = useRef<HTMLDivElement>(null)
 
@@ -32,16 +33,18 @@ export function TickerSearch({ onSelect, selected }: TickerSearchProps) {
     setLoading(true)
     let current = true
     const handle = setTimeout(() => {
-      searchEntities(q)
+      loadFilerIndex()
         .then((rows) => {
           if (!current) return
-          setResults(rows)
+          setResults(searchFilers(rows, q))
+          setError(null)
           setActive(0)
           setLoading(false)
         })
-        .catch(() => {
+        .catch((e: unknown) => {
           if (!current) return
           setResults([])
+          setError(e instanceof Error ? e.message : String(e))
           setLoading(false)
         })
     }, 250)
@@ -60,8 +63,8 @@ export function TickerSearch({ onSelect, selected }: TickerSearchProps) {
     return () => document.removeEventListener('mousedown', onDown)
   }, [])
 
-  const choose = (entity: SecEntity) => {
-    onSelect(entity)
+  const choose = (filer: FilerRow) => {
+    onSelect(filer)
     setTerm('')
     setResults([])
     setOpen(false)
@@ -85,7 +88,7 @@ export function TickerSearch({ onSelect, selected }: TickerSearchProps) {
   }
 
   const placeholder = selected
-    ? `${selected.ticker ?? selected.name} — ${selected.name}`
+    ? `${selected.ticker} — ${selected.name}`
     : 'Search by ticker or company name…'
 
   return (
@@ -108,6 +111,8 @@ export function TickerSearch({ onSelect, selected }: TickerSearchProps) {
         <ul className="sec-suggest" role="listbox">
           {loading ? (
             <li className="sec-suggest-empty">Searching…</li>
+          ) : error ? (
+            <li className="sec-suggest-empty">Could not load the filer list: {error}</li>
           ) : results.length === 0 ? (
             <li className="sec-suggest-empty">No companies found</li>
           ) : (
@@ -121,8 +126,11 @@ export function TickerSearch({ onSelect, selected }: TickerSearchProps) {
                   onMouseEnter={() => setActive(i)}
                   onClick={() => choose(r)}
                 >
-                  <span className="sec-suggest-ticker">{r.ticker ?? '—'}</span>
-                  <span className="sec-suggest-name">{r.name}</span>
+                  <span className="sec-suggest-ticker">{r.ticker}</span>
+                  <span className="sec-suggest-name">
+                    {r.name}
+                    {r.exchange ? <span className="hint"> · {r.exchange}</span> : null}
+                  </span>
                 </button>
               </li>
             ))

@@ -11,8 +11,8 @@
  * security over localStorage while adding needless transmission. Same
  * "persists until you delete it" property either way.
  *
- * `slot` namespaces distinct keys so they don't collide — e.g. `'sec'` for the
- * SEC graph key today, `'llm'` for the chat provider key as a fast-follow.
+ * `slot` namespaces distinct keys so they don't collide — `'llm'` for the chat
+ * provider key, `'elevenlabs'` for the voice key.
  */
 import { useCallback, useEffect, useState } from 'react'
 
@@ -22,7 +22,7 @@ import { useCallback, useEffect, useState } from 'react'
 const STORAGE_PREFIX = 'holon-viewer:apikey:'
 // Same-tab change signal — the `storage` event only fires in OTHER tabs, so this
 // keeps two instances of the same slot in one tab in sync (e.g. the chat
-// drawer's 'sec' instance tracking the SEC connect form's).
+// drawer's 'llm' instance tracking the keys drawer's).
 const CHANGE_EVENT = 'holon-viewer:apikey-change'
 
 function read(storageKey: string): string {
