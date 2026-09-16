@@ -1277,3 +1277,9 @@ body {
   background: none;
   font-size: inherit;
 }
+
+@media (max-width: 600px) {
+  .mcp-page {
+    padding: 1.5rem 1.25rem 2rem;
+  }
+}
