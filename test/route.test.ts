@@ -9,7 +9,7 @@ describe('laneFromLocation', () => {
     expect(laneFromLocation('', '')).toBe('sec')
   })
 
-  // `xbrlkit view` and the SEC catalog both write `/?url=`; it must keep opening the report.
+  // The SEC catalog and earlier xbrlkit releases write `/?url=`; it must keep opening the report.
   it('opens a linked report on the apex in the File lane', () => {
     expect(laneFromLocation('/', `?url=${encodeURIComponent(CDN)}`)).toBe('file')
     expect(laneFromLocation('/index.html', `?url=${encodeURIComponent(CDN)}`)).toBe('file')
