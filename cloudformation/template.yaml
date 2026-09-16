@@ -143,48 +143,64 @@ Resources:
         - Key: Component
           Value: !Ref ComponentTag
 
-  # ── www. → canonical redirect at the edge (conditional) ─────────────────────
-  # Runs on every viewer request; returns the request untouched unless the Host
-  # is the www. name. The legacy name is served, never redirected (see the
-  # LegacyDomainName parameter).
-  WwwRedirectFunction:
+  # ── Viewer-request function: www. redirect, then the lane pages ────────────
+  # Runs on every viewer request, for every name. When the Host is the www.
+  # name it redirects to the canonical domain with path and query intact (the
+  # legacy name is served, never redirected — see LegacyDomainName). Otherwise
+  # it maps the File and MCP lanes to their own index.html, which carry their
+  # own title, canonical and share text; the query string is left alone, so a
+  # `/?url=` link reaches the apex page untouched. Keep the lane paths in step
+  # with LANE_PATHS in src/pages/route.ts. Any other path misses the bucket and
+  # falls through to the apex index.html (CustomErrorResponses below).
+  ViewerRequestFunction:
     Type: AWS::CloudFront::Function
-    Condition: HasWww
     Properties:
-      Name: !Sub xbrlkit-viewer-${Environment}-www-redirect
+      Name: !Sub xbrlkit-viewer-${Environment}-viewer-request
       AutoPublish: true
       FunctionConfig:
-        Comment: Redirect the www. name to the canonical domain, keeping path and query
+        Comment: Redirect www. to the canonical domain; map /file and /mcp to their pages
         Runtime: cloudfront-js-2.0
       FunctionCode: !Sub |
+        var LANE_PAGES = {
+          '/file': '/file/index.html',
+          '/file/': '/file/index.html',
+          '/mcp': '/mcp/index.html',
+          '/mcp/': '/mcp/index.html'
+        };
+
         function handler(event) {
           var request = event.request;
+          var www = '${WwwDomainName}';
           var host = request.headers.host ? request.headers.host.value : '';
-          if (host !== '${WwwDomainName}') {
-            return request;
-          }
-          // Query values are carried as received, not re-encoded: a ?url=
-          // link must reach the canonical origin exactly as it was shared.
-          var parts = [];
-          var keys = Object.keys(request.querystring);
-          for (var i = 0; i < keys.length; i++) {
-            var entry = request.querystring[keys[i]];
-            if (entry.multiValue) {
-              for (var j = 0; j < entry.multiValue.length; j++) {
-                parts.push(keys[i] + '=' + entry.multiValue[j].value);
+          if (www !== '' && host === www) {
+            // Query values are carried as received, not re-encoded: a ?url=
+            // link must reach the canonical origin exactly as it was shared.
+            var parts = [];
+            var keys = Object.keys(request.querystring);
+            for (var i = 0; i < keys.length; i++) {
+              var entry = request.querystring[keys[i]];
+              if (entry.multiValue) {
+                for (var j = 0; j < entry.multiValue.length; j++) {
+                  parts.push(keys[i] + '=' + entry.multiValue[j].value);
+                }
+              } else {
+                parts.push(keys[i] + '=' + entry.value);
               }
-            } else {
-              parts.push(keys[i] + '=' + entry.value);
             }
+            var query = parts.length ? '?' + parts.join('&') : '';
+            return {
+              statusCode: 301,
+              statusDescription: 'Moved Permanently',
+              headers: {
+                location: { value: 'https://${DomainName}' + request.uri + query }
+              }
+            };
           }
-          var query = parts.length ? '?' + parts.join('&') : '';
-          return {
-            statusCode: 301,
-            statusDescription: 'Moved Permanently',
-            headers: {
-              location: { value: 'https://${DomainName}' + request.uri + query }
-            }
-          };
+          var page = LANE_PAGES[request.uri];
+          if (page) {
+            request.uri = page;
+          }
+          return request;
         }
 
   # ── CloudFront distribution ─────────────────────────────────────────────────
@@ -218,11 +234,9 @@ Resources:
           CachedMethods: [GET, HEAD]
           # Managed "CachingOptimized" cache policy
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
-          FunctionAssociations: !If
-            - HasWww
-            - - EventType: viewer-request
-                FunctionARN: !GetAtt WwwRedirectFunction.FunctionARN
-            - !Ref AWS::NoValue
+          FunctionAssociations:
+            - EventType: viewer-request
+              FunctionARN: !GetAtt ViewerRequestFunction.FunctionARN
         # The viewer is a single-page app; serve index.html for any unmatched
         # path (and for the 403 OAC returns on missing keys) so it never 404s.
         CustomErrorResponses:

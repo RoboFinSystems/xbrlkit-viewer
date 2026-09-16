@@ -1,0 +1,114 @@
+<!doctype html>
+<!--
+  The share card (public/og.png, 1200×630) that link previews show for xbrlkit.com.
+  Not part of the build. Edit this page, then re-render the PNG from the repo root:
+
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+      --hide-scrollbars --window-size=1200,630 --virtual-time-budget=3000 \
+      --screenshot="$PWD/public/og.png" "file://$PWD/src/branding/og-card.html"
+
+  and check it is still 1200×630: sips -g pixelWidth -g pixelHeight public/og.png
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      @font-face {
+        font-family: 'Orbitron';
+        font-weight: 700;
+        src: url('../../public/fonts/Orbitron/Orbitron-Bold.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'Space Grotesk';
+        font-weight: 500;
+        src: url('../../public/fonts/SpaceGrotesk/SpaceGrotesk-Medium.ttf') format('truetype');
+      }
+      @font-face {
+        font-family: 'Space Grotesk';
+        font-weight: 400;
+        src: url('../../public/fonts/SpaceGrotesk/SpaceGrotesk-Regular.ttf') format('truetype');
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+      }
+      body {
+        position: relative;
+        box-sizing: border-box;
+        padding: 88px 96px;
+        background:
+          radial-gradient(900px 520px at 100% 0%, rgba(99, 102, 241, 0.28), transparent 60%),
+          radial-gradient(700px 460px at 0% 100%, rgba(6, 182, 212, 0.2), transparent 60%), #0b0f17;
+        color: #ffffff;
+        font-family: 'Space Grotesk', sans-serif;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 28px;
+      }
+      .brand img {
+        width: 116px;
+        height: 116px;
+        filter: brightness(0) invert(1);
+      }
+      .wordmark {
+        font-family: 'Orbitron', sans-serif;
+        font-weight: 700;
+        font-size: 124px;
+        letter-spacing: 0.03em;
+        line-height: 1;
+      }
+      .bar {
+        width: 280px;
+        height: 8px;
+        margin: 44px 0 36px;
+        border-radius: 4px;
+        background: linear-gradient(135deg, #06b6d4, #3b7af5 55%, #6366f1);
+      }
+      .tagline {
+        font-size: 56px;
+        font-weight: 500;
+        line-height: 1.15;
+      }
+      .detail {
+        margin-top: 18px;
+        font-size: 30px;
+        color: #aab4c5;
+      }
+      .foot {
+        position: absolute;
+        left: 96px;
+        right: 96px;
+        bottom: 64px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 28px;
+        color: #aab4c5;
+      }
+      .pill {
+        padding: 10px 24px;
+        border: 2px solid rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+        color: #ffffff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand">
+      <img src="../../public/icon.svg" alt="" />
+      <div class="wordmark">xbrlkit</div>
+    </div>
+    <div class="bar"></div>
+    <div class="tagline">Open any SEC filing in the browser</div>
+    <div class="detail">Statements, notes and XBRL facts, with query and AI analysis</div>
+    <div class="foot">
+      <span class="pill">No key · No sign-up</span>
+      <span>xbrlkit.com</span>
+    </div>
+  </body>
+</html>

@@ -1,20 +1,50 @@
+import { holonUrlParam } from '../modes/openUrl'
+
 /**
- * The viewer has two addresses. `/` is the viewer itself — File and SEC modes,
- * and the `?url=` opens the catalog and `xbrlkit view` write — and `/mcp` is
- * the page on connecting an MCP client to `xbrlkit serve`. CloudFront answers
- * every path with `index.html`, so the split is resolved here from the
- * pathname, with no router: one page is not worth a dependency.
+ * The site has three lanes. `/` is the SEC lane: search a listed filer and
+ * open a filing, no file and no key needed, so it is what the address opens
+ * on. `/file` opens a `holon.jsonld` or `tavi.json` the visitor holds, and
+ * `/mcp` is the page on connecting an MCP client to `xbrlkit serve`.
+ *
+ * `/?url=…` belongs to no lane's path and must keep working on the apex
+ * forever: `xbrlkit view` and the SEC catalog both write that link, and the
+ * CLI names this origin in its CORS header. A `?url=` on `/` therefore opens
+ * the File lane, which loads the linked report.
+ *
+ * CloudFront rewrites `/file` and `/mcp` to their own `index.html` (so each
+ * carries its own meta) and answers every other path with the apex page, so
+ * the lane is resolved here from the location, with no router. Keep the
+ * paths in step with the edge function in `cloudformation/template.yaml`.
  */
-export type Page = 'viewer' | 'mcp'
+export type Lane = 'sec' | 'file' | 'mcp'
 
-export const MCP_PATH = '/mcp'
+export const LANES: readonly Lane[] = ['sec', 'file', 'mcp']
 
-/** Which page a pathname names; a trailing slash is the same page. */
-export function pageFromPath(pathname: string): Page {
-  return pathname.replace(/\/+$/, '') === MCP_PATH ? 'mcp' : 'viewer'
+export const LANE_PATHS: Record<Lane, string> = {
+  sec: '/',
+  file: '/file',
+  mcp: '/mcp',
 }
 
-/** The address to put in the location bar for a page. */
-export function pathForPage(page: Page): string {
-  return page === 'mcp' ? MCP_PATH : '/'
+/**
+ * The lane a path names, ignoring the query: the page CloudFront serves for it,
+ * and so the head the address should carry. A trailing slash or `/index.html`
+ * is the same page.
+ */
+export function laneFromPath(pathname: string): Lane {
+  const path = pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '')
+  if (path === LANE_PATHS.mcp) return 'mcp'
+  if (path === LANE_PATHS.file) return 'file'
+  return 'sec'
+}
+
+/** The lane a location shows: its path's lane, except that the apex with a `?url=` shows File. */
+export function laneFromLocation(pathname: string, search: string): Lane {
+  const lane = laneFromPath(pathname)
+  return lane === 'sec' && holonUrlParam(search) ? 'file' : lane
+}
+
+/** The address to put in the location bar for a lane. */
+export function pathForLane(lane: Lane): string {
+  return LANE_PATHS[lane]
 }

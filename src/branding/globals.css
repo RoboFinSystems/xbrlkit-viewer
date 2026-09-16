@@ -671,7 +671,7 @@ body {
   background: var(--rs-primary-50);
 }
 
-.dropzone h2 {
+.dropzone h1 {
   font-family: var(--rs-font-heading);
   margin: 0;
   font-size: 1.25rem;
@@ -880,7 +880,7 @@ body {
   margin-bottom: 1.25rem;
 }
 
-.sec-browse-head h2 {
+.sec-browse-head h1 {
   font-family: var(--rs-font-heading);
   margin: 0 0 0.25rem;
   font-size: 1.2rem;
@@ -893,6 +893,59 @@ body {
 .sec-empty {
   margin-top: 1.5rem;
   text-align: center;
+}
+
+/* ── SEC mode: first-visit examples and the site's own description ── */
+.sec-examples {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.sec-example {
+  border: 1px solid var(--rs-border-strong);
+  border-radius: 999px;
+  background: #ffffff;
+  padding: 0.3rem 0.85rem;
+  font-family: var(--rs-font-mono);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--rs-primary-700);
+  cursor: pointer;
+}
+
+.sec-example:hover:not(:disabled) {
+  background: var(--rs-primary-50);
+  border-color: var(--rs-primary-300);
+}
+
+.sec-example:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.sec-example[aria-busy='true'] {
+  opacity: 1;
+  background: var(--rs-primary-50);
+}
+
+.sec-about {
+  margin: 2.5rem auto 0;
+  max-width: 600px;
+  text-align: left;
+  font-size: 0.9rem;
+  color: var(--rs-gray-700);
+  line-height: 1.55;
+}
+
+.sec-about p {
+  margin: 0 0 0.75rem;
+}
+
+.sec-about a {
+  color: var(--rs-primary-700);
 }
 
 /* ── SEC mode: company search ── */
@@ -1198,7 +1251,7 @@ body {
   line-height: 1.55;
 }
 
-.mcp-page h2 {
+.mcp-page h1 {
   font-family: var(--rs-font-heading);
   margin: 0 0 0.75rem;
   font-size: 1.25rem;

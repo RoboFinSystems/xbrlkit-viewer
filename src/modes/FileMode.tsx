@@ -22,9 +22,10 @@ interface FileModeProps {
 }
 
 /**
- * Mode A — offline, zero-auth. Drop (or pick) a report's `holon.jsonld` or
+ * The File lane (`/file`) — offline, zero-auth. Drop (or pick) a report's `holon.jsonld` or
  * `tavi.json`; the library sniffs which it is, parses it client-side and the
- * shared components render it. No network, no key, no backend. The loaded-file chip + "Load another" live in
+ * shared components render it. No network, no key, no backend. It is also the
+ * lane `/?url=` opens in, so a linked report loads here. The loaded-file chip + "Load another" live in
  * the app header (`App` owns that state); this renders the dropzone, then the
  * report once one is loaded.
  */
@@ -157,7 +158,7 @@ export function FileMode({ report, fileName, onLoaded, onReset }: FileModeProps)
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
       >
-        <h2>Open a holon.jsonld or tavi.json</h2>
+        <h1>Open a holon.jsonld or tavi.json</h1>
         <p>
           Drag &amp; drop a report&apos;s <code>holon.jsonld</code> or <code>tavi.json</code> here,
           or choose a file. Everything runs in your browser.
