@@ -3,9 +3,9 @@
  *
  * Provider-neutral AND backend-neutral: it drives any `ChatBackend` (a tool set +
  * an executor + a system prompt) through a bounded loop — the model calls tools,
- * sees errors fed back as is_error results and retries, then answers. File mode
- * plugs in a local SPARQL (holon) or jq (Tavi) backend; SEC mode a remote
- * Cypher/MCP one. Neither the provider nor the tool wiring leaks into this file.
+ * sees errors fed back as is_error results and retries, then answers. The app
+ * plugs in a local SPARQL (holon) or jq (Tavi) backend for the report on
+ * screen. Neither the provider nor the tool wiring leaks into this file.
  */
 import type { AIMessage, AIProvider, ContentBlock, ToolDef } from './provider'
 
@@ -21,7 +21,7 @@ const MAX_RESULT_CHARS = 60_000
 export interface ToolRun {
   content: string
   isError?: boolean
-  /** A query string (SPARQL / Cypher / jq) to surface in the UI reveal. */
+  /** A query string (SPARQL / jq) to surface in the UI reveal. */
   query?: string
 }
 
@@ -29,12 +29,11 @@ export interface ToolRun {
 export interface ChatBackend {
   system: string
   tools: ToolDef[]
-  /** Label for the generated-query reveal, e.g. 'SPARQL', 'Cypher' or 'jq'. */
+  /** Label for the generated-query reveal, e.g. 'SPARQL' or 'jq'. */
   queryLabel: string
   /**
-   * `onProgress` reports what the tool is doing while it runs — the remote
-   * MCP transport streams it back for long queries ("Fetched 5000 rows"), so
-   * the UI shows real work rather than a static label. Local tools ignore it.
+   * `onProgress` lets a tool report what it is doing while it runs, so the UI
+   * can show real work rather than a static label. The local tools ignore it.
    */
   runTool: (
     name: string,
@@ -51,10 +50,7 @@ export interface LoopResult {
 }
 
 export interface LoopOptions {
-  /**
-   * Appended to the backend's system prompt for this run — how the report in
-   * context (SEC mode) is injected so the agent anchors on the right filing.
-   */
+  /** Appended to the backend's system prompt for this run. */
   contextNote?: string
   /**
    * Called as the loop moves through phases (thinking → running a tool →
@@ -71,11 +67,8 @@ export interface LoopOptions {
 const TOOL_STATUS: Record<string, string> = {
   describe_report: 'Reading the report',
   describe_model: 'Reading the model',
-  'get-graph-schema': 'Reading the graph schema',
-  'get-example-queries': 'Finding query patterns',
   run_sparql: 'Querying the report',
   run_jq: 'Querying the model',
-  'read-graph-cypher': 'Querying the graph',
 }
 
 export async function runToolLoop(

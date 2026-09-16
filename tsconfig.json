@@ -11,11 +11,7 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "types": ["node"],
-    "baseUrl": ".",
-    "paths": {
-      "@robosystems/client/sdk": ["./src/sec/robosystems-client.d.ts"]
-    }
+    "types": ["node"]
   },
   "include": ["src", "test"]
 }

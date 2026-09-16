@@ -8,7 +8,7 @@ This is the **xbrlkit viewer**: a static, client-side React/Vite renderer for `h
 
 ## Bring-your-own-keys — the highest-stakes property in this repo
 
-Users enter **their own** Anthropic, ElevenLabs, and RoboSystems API keys into a keys drawer, on the explicit promise that those keys are persisted only in their browser and never sent to an app backend (there isn't one). Any staged change touching key handling deserves the closest possible reading:
+Users enter **their own** Anthropic and ElevenLabs API keys into a keys drawer, on the explicit promise that those keys are persisted only in their browser and never sent to an app backend (there isn't one). Any staged change touching key handling deserves the closest possible reading:
 
 - Does a key reach **anywhere other than the intended provider**? A new analytics call, error reporter, log line, or telemetry hook that includes request state can exfiltrate a user's key. This is the single worst bug this app could ship.
 - Is a key written anywhere more durable or more shared than intended (cookies, URL parameters, `postMessage`, a service worker cache)?

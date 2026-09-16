@@ -4,8 +4,8 @@
  * from the graph, what is present and example queries; `run_sparql` runs
  * Comunica locally. No network.
  *
- * The same two-tool hand-off as the Tavi model's jq backend and the SEC
- * graph's Cypher one, worded in parallel on purpose.
+ * The same two-tool hand-off as the Tavi model's jq backend, worded in
+ * parallel on purpose.
  */
 import type { Store } from 'n3'
 import { describeReport } from '../describeReport'

@@ -3,9 +3,9 @@
  * document, in a worker. `describe_model` returns the layout, what is present
  * and example programs; `run_jq` runs one program. No network.
  *
- * The same two-tool hand-off as the holon's SPARQL backend and the SEC graph's
- * Cypher one, worded in parallel on purpose (as filing-ladder's rungs 5c / 7b
- * / 7c are), so the only variable across the three is the representation.
+ * The same two-tool hand-off as the holon's SPARQL backend, worded in parallel
+ * on purpose (as filing-ladder's rungs 5c / 7b are), so the only variable
+ * between the two is the representation.
  */
 import type { TaviDocument } from '@robosystems/report-components/adapters'
 import { describeModel } from '../describeModel'

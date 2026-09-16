@@ -22,7 +22,6 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",
     "@comunica/query-sparql-rdfjs": "^5.2.3",
-    "@robosystems/client": "^1.17.0",
     "@robosystems/report-components": "^0.6.0",
     "jq-wasm": "^3.0.0-jq-1.8.2",
     "jsonld": "^9.0.0",

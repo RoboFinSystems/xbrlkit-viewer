@@ -1,6 +1,5 @@
 import type { NormalizedReport } from '@robosystems/report-components'
 import { lazy, Suspense, useCallback, useState } from 'react'
-import type { SecReportContext } from './ai/reportContext'
 import type { ReportSource } from './ai/source'
 import { KeysDrawer } from './chat/KeysDrawer'
 import { BotIcon, GearIcon, GitHubIcon } from './components/icons'
@@ -25,9 +24,6 @@ export function App() {
   // Mounts the lazy drawer on first open, then keeps it mounted (state + layout).
   const [chatMounted, setChatMounted] = useState(false)
   const [keysOpen, setKeysOpen] = useState(false)
-  // The SEC filing currently on screen (published by SecMode), so the chat can
-  // key its summary/pin on it. Null in file mode and when browsing.
-  const [secContext, setSecContext] = useState<SecReportContext | null>(null)
 
   const onLoaded = useCallback((r: NormalizedReport, s: ReportSource, name: string) => {
     setReport(r)
@@ -100,7 +96,7 @@ export function App() {
               aria-selected={mode === 'sec'}
               onClick={() => setMode('sec')}
             >
-              Graph
+              SEC
             </button>
           </nav>
         </div>
@@ -112,7 +108,7 @@ export function App() {
             {mode === 'file' ? (
               <FileMode report={report} fileName={fileName} onLoaded={onLoaded} onReset={onReset} />
             ) : (
-              <SecMode onOpenSettings={openSettings} onReportContext={setSecContext} />
+              <SecMode report={report} onLoaded={onLoaded} onReset={onReset} />
             )}
           </main>
           <footer className="app-footer">
@@ -155,7 +151,6 @@ export function App() {
               mode={mode}
               report={report}
               source={source}
-              secContext={mode === 'sec' ? secContext : null}
               onOpenSettings={openSettings}
             />
           </Suspense>

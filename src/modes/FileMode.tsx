@@ -1,11 +1,10 @@
 import type { NormalizedReport } from '@robosystems/report-components'
 import { reportSections, sliceReportSection } from '@robosystems/report-components'
-import { parseReportDocument, type TaviDocument } from '@robosystems/report-components/adapters'
 import type { DragEvent } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { buildStore } from '../ai/rdf'
 import type { ReportSource } from '../ai/source'
 import { Spinner } from '../components/Spinner'
+import { loadDocumentText } from '../report/loadDocument'
 import { SectionedReport } from '../report/SectionedReport'
 import { holonUrlName, holonUrlParam } from './openUrl'
 
@@ -58,20 +57,7 @@ export function FileMode({ report, fileName, onLoaded, onReset }: FileModeProps)
   const loadText = useCallback(
     async (text: string, name: string) => {
       try {
-        const json = JSON.parse(text) as object
-        const { format, report: parsed } = await parseReportDocument(json)
-        if (!parsed.informationBlocks.length) {
-          setError('No sections found — is this a holon or a Tavi report?')
-          return
-        }
-        // Keep the file's own queryable form beside the rendered report. A holon
-        // is RDF: rebuild the store from the same document so the chat can run
-        // SPARQL over it (report-components discards its own). A Tavi model is
-        // one JSON document: the chat runs jq over it as-is.
-        const source: ReportSource =
-          format === 'holon'
-            ? { format, store: await buildStore(json) }
-            : { format, doc: json as TaviDocument, text }
+        const { report: parsed, source } = await loadDocumentText(text)
         onLoaded(parsed, source, name)
         setError(null)
       } catch (e) {
