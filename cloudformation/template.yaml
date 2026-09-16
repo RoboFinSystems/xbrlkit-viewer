@@ -148,24 +148,28 @@ Resources:
   # name it redirects to the canonical domain with path and query intact (the
   # legacy name is served, never redirected — see LegacyDomainName). Otherwise
   # it maps the File and MCP lanes to their own index.html, which carry their
-  # own title, canonical and share text; the query string is left alone, so a
-  # `/?url=` link reaches the apex page untouched. Keep the lane paths in step
-  # with LANE_PATHS in src/pages/route.ts. Any other path misses the bucket and
-  # falls through to the apex index.html (CustomErrorResponses below).
+  # own title, canonical and share text, and maps `/view` (the link `xbrlkit
+  # view` opens) to the apex index.html directly rather than through a bucket
+  # miss. The query string is left alone, so a `?url=` link reaches its page
+  # untouched. Keep the paths in step with LANE_PATHS and VIEW_PATH in
+  # src/pages/route.ts. Any other path misses the bucket and falls through to
+  # the apex index.html (CustomErrorResponses below).
   ViewerRequestFunction:
     Type: AWS::CloudFront::Function
     Properties:
       Name: !Sub xbrlkit-viewer-${Environment}-viewer-request
       AutoPublish: true
       FunctionConfig:
-        Comment: Redirect www. to the canonical domain; map /file and /mcp to their pages
+        Comment: Redirect www. to the canonical domain; map /file, /mcp and /view to their pages
         Runtime: cloudfront-js-2.0
       FunctionCode: !Sub |
         var LANE_PAGES = {
           '/file': '/file/index.html',
           '/file/': '/file/index.html',
           '/mcp': '/mcp/index.html',
-          '/mcp/': '/mcp/index.html'
+          '/mcp/': '/mcp/index.html',
+          '/view': '/index.html',
+          '/view/': '/index.html'
         };
 
         function handler(event) {
