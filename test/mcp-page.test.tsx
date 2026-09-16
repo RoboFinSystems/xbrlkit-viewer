@@ -11,26 +11,6 @@ import {
   SERVE_HTTP,
   SERVE_HTTP_WITH_IDENTITY,
 } from '../src/pages/mcpRecipes'
-import { pageFromPath, pathForPage } from '../src/pages/route'
-
-describe('pageFromPath', () => {
-  it('names the MCP page, with or without a trailing slash', () => {
-    expect(pageFromPath('/mcp')).toBe('mcp')
-    expect(pageFromPath('/mcp/')).toBe('mcp')
-  })
-
-  it('is the viewer everywhere else', () => {
-    expect(pageFromPath('/')).toBe('viewer')
-    expect(pageFromPath('')).toBe('viewer')
-    expect(pageFromPath('/mcp-server')).toBe('viewer')
-  })
-
-  it('round-trips through pathForPage', () => {
-    for (const page of ['viewer', 'mcp'] as const) {
-      expect(pageFromPath(pathForPage(page))).toBe(page)
-    }
-  })
-})
 
 // The recipes mirror xbrlkit's README: the [mcp] extra, @latest, and --from for
 // a hand-written config (--with is the registry-composed form; --refresh is

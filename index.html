@@ -7,49 +7,36 @@
          (Chrome honours it in a favicon); the PNG is the black fallback Safari and crawlers use. -->
     <link rel="icon" href="/icon.png" type="image/png" sizes="512x512" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any" />
-
-    <title>xbrlkit — open holon.jsonld and tavi.json financial reports</title>
-    <meta
-      name="description"
-      content="Open a holon.jsonld or tavi.json financial report in the browser: statements, notes, dimensional facts, in-browser query and AI analysis. Search any listed filer's SEC filings, no key needed. Or connect Claude, Cursor or VS Code to xbrlkit serve, the local MCP server."
-    />
-    <link rel="canonical" href="https://xbrlkit.com/" />
     <meta name="theme-color" content="#0b0f17" />
+
+    <!-- Title, description, canonical and the share text differ per lane: the build fills
+         this marker from src/pages/routeMeta.ts, and writes file/ and mcp/ copies with theirs. -->
+    <!--route-head-->
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="xbrlkit" />
+    <meta property="og:image" content="https://xbrlkit.com/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta
-      property="og:title"
-      content="xbrlkit — open holon.jsonld and tavi.json financial reports"
+      property="og:image:alt"
+      content="xbrlkit: open any SEC filing in the browser. No key, no sign-up."
     />
-    <meta
-      property="og:description"
-      content="Open a holon.jsonld or tavi.json financial report in the browser: statements, notes, dimensional facts, in-browser query and AI analysis. Or connect your AI client to xbrlkit serve, the local MCP server."
-    />
-    <meta property="og:url" content="https://xbrlkit.com/" />
-    <meta property="og:image" content="https://xbrlkit.com/icon.png" />
 
     <!-- Twitter -->
-    <meta name="twitter:card" content="summary" />
-    <meta
-      name="twitter:title"
-      content="xbrlkit — open holon.jsonld and tavi.json financial reports"
-    />
-    <meta
-      name="twitter:description"
-      content="Open a holon.jsonld or tavi.json financial report in the browser: statements, notes, dimensional facts, in-browser query and AI analysis. Or connect your AI client to xbrlkit serve, the local MCP server."
-    />
-    <meta name="twitter:image" content="https://xbrlkit.com/icon.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://xbrlkit.com/og.png" />
   </head>
   <body>
     <div id="root"></div>
     <noscript>
       <h1>xbrlkit</h1>
       <p>
-        xbrlkit.com opens holon.jsonld and tavi.json financial reports in the browser, and /mcp
-        shows how to connect an MCP client to xbrlkit serve. This site requires JavaScript — enable
-        it to open a report file or connect your API keys.
+        xbrlkit.com opens SEC filings in the browser: search any listed company and read its 10-K,
+        10-Q, 20-F or 40-F, with no key and no sign-up. /file opens a holon.jsonld or tavi.json
+        report you hold, and /mcp shows how to connect an MCP client to xbrlkit serve. This site
+        requires JavaScript.
       </p>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>

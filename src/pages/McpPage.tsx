@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { CodeBlock } from '../components/CodeBlock'
 import {
   CLAUDE_CODE_HTTP,
@@ -14,29 +13,20 @@ import {
   XBRLKIT_REPO,
 } from './mcpRecipes'
 
-const TITLE = 'xbrlkit MCP server — read a filing in Claude, Cursor or VS Code, locally'
-
 /**
  * `/mcp` — how to connect an MCP client to `xbrlkit serve`, the local server
  * in xbrlkit, the package behind this site. The page is the recipe and nothing more:
  * the tools, the switches and what `load_filing` takes live in the package's
  * own serve README, which is linked rather than copied so there is one text
  * to keep true. It deliberately names no tool count — that number has moved
- * three times in ten days.
+ * three times in ten days. Its title and description live with the other
+ * lanes' in `routeMeta.ts`; the app shell applies them.
  */
 export function McpPage() {
-  useEffect(() => {
-    const previous = document.title
-    document.title = TITLE
-    return () => {
-      document.title = previous
-    }
-  }, [])
-
   return (
     <article className="mcp-page">
       <header>
-        <h2>Read a filing in your own AI client</h2>
+        <h1>Read a filing in your own AI client</h1>
         <p>
           The xbrlkit package is also a local MCP server. <code>xbrlkit serve</code> holds a filing
           in memory on your machine and exposes it to Claude, Cursor, VS Code or any other MCP

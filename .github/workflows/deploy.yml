@@ -95,6 +95,10 @@ jobs:
 
       - name: Build static site
         run: npm run build # vite build → dist/
+        env:
+          # Cloudflare Web Analytics site token (not a secret: it ships in the page).
+          # Unset → the build emits no beacon, so forks and unconfigured repos stay dark.
+          VITE_CF_ANALYTICS_TOKEN: ${{ vars.CF_ANALYTICS_TOKEN || '' }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v6
@@ -263,18 +267,25 @@ jobs:
       - name: Sync build to S3
         run: |
           BUCKET="${{ steps.outputs.outputs.bucket }}"
-          # Hashed assets are immutable → long cache. index.html and the sample
-          # holons must revalidate: samples keep a fixed filename across
-          # regenerations, so an immutable header would pin returning browsers
-          # to a stale report for up to a year (immutable is never revalidated —
-          # CloudFront invalidation can't reach a browser's cache).
+          # Hashed assets are immutable → long cache. Everything with a fixed
+          # name must revalidate instead, or an immutable header pins returning
+          # browsers to a stale copy for up to a year (immutable is never
+          # revalidated — CloudFront invalidation can't reach a browser's cache):
+          # every lane's index.html (index.html, file/, mcp/ — the pattern needs
+          # the leading * to match the nested ones), the sample holons, and the
+          # sitemap, robots.txt and share image.
           aws s3 sync dist/ "s3://$BUCKET" --delete \
             --cache-control "public,max-age=31536000,immutable" \
-            --exclude index.html --exclude "samples/*"
+            --exclude "*index.html" --exclude "samples/*" \
+            --exclude sitemap.xml --exclude robots.txt --exclude og.png
           aws s3 sync dist/samples/ "s3://$BUCKET/samples/" \
             --cache-control "public,max-age=300,must-revalidate" \
             --content-type "application/ld+json"
-          aws s3 cp dist/index.html "s3://$BUCKET/index.html" \
+          aws s3 sync dist/ "s3://$BUCKET" \
+            --exclude "*" --include sitemap.xml --include robots.txt --include og.png \
+            --cache-control "public,max-age=300,must-revalidate"
+          aws s3 sync dist/ "s3://$BUCKET" \
+            --exclude "*" --include "*index.html" \
             --cache-control "no-cache" --content-type "text/html"
 
       - name: Invalidate CloudFront

@@ -1,7 +1,45 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'node:url'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig, loadEnv, type Plugin } from 'vite'
+import {
+  CLONED_LANES,
+  fillRouteHead,
+  injectBeacon,
+  routeFileName,
+  swapRouteHead,
+} from './src/pages/routeMeta'
+
+/**
+ * Each lane's static HTML. The apex `index.html` gets the SEC lane's head in
+ * place of its marker (and the analytics beacon when a token is set); after
+ * Vite has written it, `file/index.html` and `mcp/index.html` are emitted as
+ * the same page with their own head, so the hashed asset paths and the body
+ * have one source. CloudFront maps `/file` and `/mcp` to those files.
+ * `enforce: 'post'` puts `generateBundle` after Vite's HTML plugin, which is
+ * what emits `index.html` into the bundle.
+ */
+function siteHead(analyticsToken: string | undefined): Plugin {
+  return {
+    name: 'xbrlkit-site-head',
+    enforce: 'post',
+    transformIndexHtml(html) {
+      return injectBeacon(fillRouteHead(html), analyticsToken)
+    },
+    generateBundle(_options, bundle) {
+      const apex = bundle['index.html']
+      if (!apex || apex.type !== 'asset') throw new Error('The build emitted no index.html')
+      const html = String(apex.source)
+      for (const lane of CLONED_LANES) {
+        this.emitFile({
+          type: 'asset',
+          fileName: routeFileName(lane),
+          source: swapRouteHead(html, lane),
+        })
+      }
+    },
+  }
+}
 
 export default defineConfig(({ mode }) => {
   // Load .env / .env.local (plus inline shell vars) so the local-package link
@@ -19,7 +57,7 @@ export default defineConfig(({ mode }) => {
     fileURLToPath(new URL(`../robosystems-report-components/dist/${p}`, import.meta.url))
 
   return {
-    plugins: [react()],
+    plugins: [react(), siteHead(env.VITE_CF_ANALYTICS_TOKEN)],
     resolve: {
       // A single React instance across the app and the (aliased) local package.
       dedupe: ['react', 'react-dom'],

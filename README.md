@@ -1,12 +1,12 @@
 # xbrlkit viewer
 
-This is [xbrlkit.com](https://xbrlkit.com), the browser side of [xbrlkit](https://github.com/RoboFinSystems/xbrlkit). Its main function is the viewer: a static, client-side renderer for `holon.jsonld` and `tavi.json` financial reports — the analog of Arelle's `ixbrl-viewer`. A holon is a portable RDF artifact and a Tavi model is compiled JSON, not self-rendering HTML, so the viewer reconstructs the financial statements from the document and layers on interactive inspection, in-browser query, and AI analysis. No sign-up and no backend — open a file and go. The site's wordmark is plain `xbrlkit`: the viewer is what the address opens on, and `/mcp` is its other page.
+This is [xbrlkit.com](https://xbrlkit.com), the browser side of [xbrlkit](https://github.com/RoboFinSystems/xbrlkit). Its main function is the viewer: a static, client-side renderer for `holon.jsonld` and `tavi.json` financial reports — the analog of Arelle's `ixbrl-viewer`. A holon is a portable RDF artifact and a Tavi model is compiled JSON, not self-rendering HTML, so the viewer reconstructs the financial statements from the document and layers on interactive inspection, in-browser query, and AI analysis. No sign-up and no backend — search a company or open a file and go. The site's wordmark is plain `xbrlkit`, and it has three lanes: `/` opens the SEC lane (any listed filer's filings, no file needed), `/file` opens a report you hold, and `/mcp` is the page on connecting an MCP client.
 
 **Live at <https://xbrlkit.com>.** From the command line, `uvx xbrlkit view NVDA` renders a filing here without downloading anything by hand. The viewer is a RoboSystems project; the earlier `holon.robosystems.ai` address keeps working as an alias.
 
-- **File Mode**: Open a local `holon.jsonld` or `tavi.json` (the same filing as a Project Tavi compiled model) and render the full report — offline, no API key, no backend, no network call. A report on the web opens by link: `/?url=https://…/holon.jsonld` (or `…/tavi.json`) (the host must allow cross-origin reads; the RoboSystems public data CDN does, and so does `xbrlkit view`'s loopback server). Try it locally with `npm run preview` — the dev server cannot serve a `?url=` link, Vite reserves that query for asset imports.
-- **SEC Mode**: Search any listed filer by ticker or name and open one of its filings — every 10-K, 10-Q, 20-F and 40-F since 2024 — straight from the RoboSystems public data CDN, where each filing sits as `tavi.json` and `holon.jsonld`. Same renderer, same in-browser chat; no key and no sign-up.
-- **MCP**: <https://xbrlkit.com/mcp> shows how to connect Claude, Cursor, VS Code or Claude Code to `xbrlkit serve`, the local MCP server in the package behind this viewer — client-launched over stdio or pointed at the loopback URL, nothing hosted. The page is the recipe and links the package's [serve README](https://github.com/RoboFinSystems/xbrlkit/blob/main/xbrlkit/serve/README.md) for the rest.
+- **SEC** (`/`, the landing): Search any listed filer by ticker or name, or start from an example ticker, and open one of its filings — every 10-K, 10-Q, 20-F and 40-F since 2024 — straight from the RoboSystems public data CDN, where each filing sits as `tavi.json` and `holon.jsonld`. Same renderer, same in-browser chat; no key and no sign-up.
+- **File** (`/file`): Open a local `holon.jsonld` or `tavi.json` (the same filing as a Project Tavi compiled model) and render the full report — offline, no API key, no backend, no network call. A report on the web opens by link: `/?url=https://…/holon.jsonld` (or `…/tavi.json`) opens it in this lane, and that link stays on the apex for good, because `xbrlkit view` and the SEC catalog both write it (the host must allow cross-origin reads; the RoboSystems public data CDN does, and so does `xbrlkit view`'s loopback server). Try it locally with `npm run preview` — the dev server cannot serve a `?url=` link, Vite reserves that query for asset imports.
+- **MCP** (`/mcp`): <https://xbrlkit.com/mcp> shows how to connect Claude, Cursor, VS Code or Claude Code to `xbrlkit serve`, the local MCP server in the package behind this viewer — client-launched over stdio or pointed at the loopback URL, nothing hosted. The page is the recipe and links the package's [serve README](https://github.com/RoboFinSystems/xbrlkit/blob/main/xbrlkit/serve/README.md) for the rest.
 - **Statement Rendering**: Reconstructs the complete report — balance sheet, income statement, cash flow, equity, and every disclosure section — from the holon's scene / boundary / projection named graphs, with a table-of-contents sidebar for navigation.
 - **Dimensional Facts & Disclosures**: Renders dimensional breakdowns (segments and other axes) and text-block note disclosures alongside the numeric statements, at full fidelity.
 - **Fact Inspection**: Inspect any fact — its element, period, unit, and the calculation rule it participates in — directly in the statement tables.
@@ -23,16 +23,18 @@ npm install      # Install dependencies
 npm run dev      # Start the dev server (Vite, default http://localhost:5173)
 ```
 
-Open the bundled sample report, or drag in your own `holon.jsonld` or `tavi.json`. Build either from any SEC filing with [`xbrlkit`](https://github.com/RoboFinSystems/xbrlkit), or skip the file entirely: `uvx xbrlkit view NVDA` serves a filing from your machine and opens it in the hosted viewer.
+The dev server opens on the SEC lane; `/file` takes the bundled sample report or your own `holon.jsonld` or `tavi.json`. Build either from any SEC filing with [`xbrlkit`](https://github.com/RoboFinSystems/xbrlkit), or skip the file entirely: `uvx xbrlkit view NVDA` serves a filing from your machine and opens it in the hosted viewer.
 
 ### Configuration
 
-Neither mode needs configuration. **SEC Mode** reads the filer catalog and the report files from the RoboSystems public data CDN (`https://public.robosystems.ai`) directly from the browser. To point it at a staging CDN or a local bucket, copy the env template and set the URL:
+No lane needs configuration. **SEC Mode** reads the filer catalog and the report files from the RoboSystems public data CDN (`https://public.robosystems.ai`) directly from the browser. To point it at a staging CDN or a local bucket, copy the env template and set the URL:
 
 ```bash
 cp .env.example .env
 # VITE_FILINGS_CDN_URL=https://public.robosystems.ai
 ```
+
+**Analytics.** A build with `VITE_CF_ANALYTICS_TOKEN` set appends the [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) beacon to every page. It is cookieless and counts page views and referrers; it never sees a report, a query or a key. Builds without the token, local and fork builds included, carry no beacon.
 
 ## Development Commands
 
@@ -80,7 +82,7 @@ npm run feature:create   # Create a feature branch
 
 Keys are entered in the app's keys drawer and stored only in your browser.
 
-- **Viewing needs none** — File Mode and SEC Mode both work without a key.
+- **Viewing needs none** — the SEC and File lanes both work without a key.
 - **Anthropic API key** — for AI analysis and summaries
 - **ElevenLabs API key** ([get one](https://try.elevenlabs.io/v9z3wzm97gk3)) — for voice / read-aloud
 
@@ -90,6 +92,7 @@ Keys are entered in the app's keys drawer and stored only in your browser.
 - AWS account with IAM Identity Center (SSO)
 - S3 + CloudFront for static hosting, provisioned via CloudFormation
 - Custom domains are optional, from two repo variables: `VIEWER_DOMAIN` (the canonical name, in a public Route53 hosted zone; an apex domain also gets its `www.` form, redirected to it at the edge) and `VIEWER_LEGACY_DOMAIN` (an earlier name, served as an alias of the same distribution — never redirected, because a published `xbrlkit view` allows only the origin it was built with to read the report it serves)
+- Optional: a `CF_ANALYTICS_TOKEN` repo variable holding a Cloudflare Web Analytics site token; the deploy passes it to the build, and without it the site carries no beacon
 - A `production` GitHub environment on the repo (required reviewer; deployment refs `main`, `release/*`): the deploy workflow's gate job binds it, so every production deploy pauses for approval
 
 ## Architecture
@@ -100,7 +103,8 @@ Keys are entered in the app's keys drawer and stored only in your browser.
 - [`@robosystems/report-components`](https://github.com/RoboFinSystems/robosystems-report-components) — the source-agnostic rendering library shared with the RoboLedger app and others; this repo is the shell around it
 - N3.js quad store + Comunica for in-browser RDF and SPARQL; jq-wasm (in a Web Worker) for in-browser jq over Tavi models
 - Anthropic SDK for AI; ElevenLabs for voice
-- The RoboSystems public data CDN for SEC Mode: the filer catalog and each filing's `tavi.json` / `holon.jsonld`, read with plain `fetch`
+- The RoboSystems public data CDN for the SEC lane: the filer catalog and each filing's `tavi.json` / `holon.jsonld`, read with plain `fetch`
+- Three lanes without a router: the lane comes from the address (`src/pages/route.ts`), and each lane's title, description, canonical and share text come from one table (`src/pages/routeMeta.ts`)
 
 **Rendering:**
 
@@ -108,7 +112,9 @@ The render logic is not in this app — it lives in `@robosystems/report-compone
 
 **Infrastructure:**
 
-- Builds to pure static files — no backend at runtime
+- Builds to pure static files — no backend at runtime. The build writes `index.html` for the SEC lane plus `file/index.html` and `mcp/index.html`, the same page with that lane's head, so crawlers and link previews read each lane's own meta without JavaScript
+- A CloudFront Function maps `/file` and `/mcp` to those pages (and redirects `www.` to the apex); every other path is answered with the apex page
+- The share card `public/og.png` is rendered from `src/branding/og-card.html` with headless Chrome; the command is at the top of that file
 - Hosted on AWS S3 + CloudFront
 - CloudFormation-managed; deployed via GitHub Actions
 

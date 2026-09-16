@@ -7,19 +7,38 @@ import { Spinner } from './components/Spinner'
 import { FileMode } from './modes/FileMode'
 import { SecMode } from './modes/SecMode'
 import { McpPage } from './pages/McpPage'
-import { pageFromPath, pathForPage, type Page } from './pages/route'
+import { laneFromLocation, laneFromPath, pathForLane, type Lane } from './pages/route'
+import { applyRouteMeta, VIEWER_REPO } from './pages/routeMeta'
 
 // Lazy: the chat drawer pulls in Comunica, the Anthropic SDK, and markdown
 // (~2 MB). Load that chunk only when the user first opens the drawer, keeping
 // the report-render path lean.
 const ChatDrawer = lazy(() => import('./chat/ChatDrawer').then((m) => ({ default: m.ChatDrawer })))
 
-type Mode = 'file' | 'sec'
+type ViewerLane = Exclude<Lane, 'mcp'>
+
+function currentLane(): Lane {
+  return laneFromLocation(window.location.pathname, window.location.search)
+}
+
+/**
+ * Bring the head in step with the address. It follows the path, not the lane
+ * shown: a `/?url=` link shows the File lane but is the apex page, and keeps
+ * the apex canonical the served HTML already carries, so the many links the
+ * company pages and the CLI write consolidate on `/`.
+ */
+function syncHead(): void {
+  applyRouteMeta(laneFromPath(window.location.pathname))
+}
 
 export function App() {
-  // `/` is the viewer, in one of its two modes; `/mcp` is the connect page.
-  const [page, setPage] = useState<Page>(() => pageFromPath(window.location.pathname))
-  const [mode, setMode] = useState<Mode>('file')
+  // `/` is the SEC lane, `/file` the File lane (and `/?url=`), `/mcp` the connect page.
+  const [lane, setLane] = useState<Lane>(currentLane)
+  // The last viewer lane, so the chat's hint still names it while MCP is showing.
+  const [viewerLane, setViewerLane] = useState<ViewerLane>(() => {
+    const initial = currentLane()
+    return initial === 'mcp' ? 'sec' : initial
+  })
   const [report, setReport] = useState<NormalizedReport | null>(null)
   // The loaded file's queryable form (RDF store or Tavi document), for the chat.
   const [source, setSource] = useState<ReportSource | null>(null)
@@ -29,26 +48,31 @@ export function App() {
   const [chatMounted, setChatMounted] = useState(false)
   const [keysOpen, setKeysOpen] = useState(false)
 
-  // Back and Forward move between the two addresses like any other pages.
-  useEffect(() => {
-    const onPop = () => setPage(pageFromPath(window.location.pathname))
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
+  const showLane = useCallback((next: Lane) => {
+    setLane(next)
+    if (next !== 'mcp') setViewerLane(next)
   }, [])
 
+  // Back and Forward move between the lanes like any other pages.
+  useEffect(() => {
+    const onPop = () => showLane(currentLane())
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [showLane])
+
+  // The served HTML carries the head for its path; keep it in step after a move.
+  useEffect(() => {
+    syncHead()
+  }, [lane])
+
+  // A move pushes the lane's bare path, which also drops a `?url=` the visitor
+  // arrived with, so the File lane cannot reopen that link on a later remount.
   const navigate = useCallback(
-    (next: Page) => {
-      if (next !== page) window.history.pushState(null, '', pathForPage(next))
-      setPage(next)
+    (next: Lane) => {
+      if (next !== lane) window.history.pushState(null, '', pathForLane(next))
+      showLane(next)
     },
-    [page]
-  )
-  const showMode = useCallback(
-    (next: Mode) => {
-      setMode(next)
-      navigate('viewer')
-    },
-    [navigate]
+    [lane, showLane]
   )
 
   const onLoaded = useCallback((r: NormalizedReport, s: ReportSource, name: string) => {
@@ -61,6 +85,15 @@ export function App() {
     setSource(null)
     setFileName(null)
   }, [])
+  // "Load another" from a report opened by `/?url=` lands on the File lane's own
+  // address, without the link, so a reload shows the dropzone rather than the report.
+  const onFileReset = useCallback(() => {
+    onReset()
+    if (window.location.pathname !== pathForLane('file') || window.location.search) {
+      window.history.replaceState(null, '', pathForLane('file'))
+      syncHead()
+    }
+  }, [onReset])
 
   // The two right-side drawers share one slot, so opening one closes the other.
   const toggleChat = useCallback(() => {
@@ -109,23 +142,23 @@ export function App() {
             <button
               type="button"
               role="tab"
-              aria-selected={page === 'viewer' && mode === 'file'}
-              onClick={() => showMode('file')}
-            >
-              File
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={page === 'viewer' && mode === 'sec'}
-              onClick={() => showMode('sec')}
+              aria-selected={lane === 'sec'}
+              onClick={() => navigate('sec')}
             >
               SEC
             </button>
             <button
               type="button"
               role="tab"
-              aria-selected={page === 'mcp'}
+              aria-selected={lane === 'file'}
+              onClick={() => navigate('file')}
+            >
+              File
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={lane === 'mcp'}
               onClick={() => navigate('mcp')}
             >
               MCP
@@ -137,12 +170,22 @@ export function App() {
       <div className="app-body">
         <div className="app-content">
           <main className="app-main">
-            {page === 'mcp' ? (
+            {lane === 'mcp' ? (
               <McpPage />
-            ) : mode === 'file' ? (
-              <FileMode report={report} fileName={fileName} onLoaded={onLoaded} onReset={onReset} />
+            ) : lane === 'file' ? (
+              <FileMode
+                report={report}
+                fileName={fileName}
+                onLoaded={onLoaded}
+                onReset={onFileReset}
+              />
             ) : (
-              <SecMode report={report} onLoaded={onLoaded} onReset={onReset} />
+              <SecMode
+                report={report}
+                onLoaded={onLoaded}
+                onReset={onReset}
+                onNavigate={navigate}
+              />
             )}
           </main>
           <footer className="app-footer">
@@ -158,7 +201,7 @@ export function App() {
             </a>
             <a
               className="app-footer-link"
-              href="https://github.com/RoboFinSystems/xbrlkit-viewer"
+              href={VIEWER_REPO}
               target="_blank"
               rel="noreferrer noopener"
             >
@@ -182,7 +225,7 @@ export function App() {
             <ChatDrawer
               open={chatOpen}
               onClose={() => setChatOpen(false)}
-              mode={mode}
+              mode={viewerLane}
               report={report}
               source={source}
               onOpenSettings={openSettings}
