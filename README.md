@@ -1,6 +1,6 @@
 # xbrlkit viewer
 
-The xbrlkit viewer is the browser side of [xbrlkit](https://github.com/RoboFinSystems/xbrlkit): a static, client-side renderer for `holon.jsonld` and `tavi.json` financial reports — the analog of Arelle's `ixbrl-viewer`. A holon is a portable RDF artifact and a Tavi model is compiled JSON, not self-rendering HTML, so the viewer reconstructs the financial statements from the document and layers on interactive inspection, in-browser query, and AI analysis. No sign-up and no backend — open a file and go.
+This is [xbrlkit.com](https://xbrlkit.com), the browser side of [xbrlkit](https://github.com/RoboFinSystems/xbrlkit). Its main function is the viewer: a static, client-side renderer for `holon.jsonld` and `tavi.json` financial reports — the analog of Arelle's `ixbrl-viewer`. A holon is a portable RDF artifact and a Tavi model is compiled JSON, not self-rendering HTML, so the viewer reconstructs the financial statements from the document and layers on interactive inspection, in-browser query, and AI analysis. No sign-up and no backend — open a file and go. The site's wordmark is plain `xbrlkit`: the viewer is what the address opens on, and `/mcp` is its other page.
 
 **Live at <https://xbrlkit.com>.** From the command line, `uvx xbrlkit view NVDA` renders a filing here without downloading anything by hand. The viewer is a RoboSystems project; the earlier `holon.robosystems.ai` address keeps working as an alias.
 

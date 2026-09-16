@@ -18,7 +18,7 @@ const TITLE = 'xbrlkit MCP server — read a filing in Claude, Cursor or VS Code
 
 /**
  * `/mcp` — how to connect an MCP client to `xbrlkit serve`, the local server
- * in the package behind this viewer. The page is the recipe and nothing more:
+ * in xbrlkit, the package behind this site. The page is the recipe and nothing more:
  * the tools, the switches and what `load_filing` takes live in the package's
  * own serve README, which is linked rather than copied so there is one text
  * to keep true. It deliberately names no tool count — that number has moved
@@ -38,12 +38,11 @@ export function McpPage() {
       <header>
         <h2>Read a filing in your own AI client</h2>
         <p>
-          The package behind this viewer is also a local MCP server. <code>xbrlkit serve</code>{' '}
-          holds a filing in memory on your machine and exposes it to Claude, Cursor, VS Code or any
-          other MCP client through tools shaped for financial reports. It binds to loopback and
-          takes no credentials, because nothing off your machine is meant to reach it. Nothing is
-          hosted: no account, no key, no index. Every answer is read from the filing on your
-          computer.
+          The xbrlkit package is also a local MCP server. <code>xbrlkit serve</code> holds a filing
+          in memory on your machine and exposes it to Claude, Cursor, VS Code or any other MCP
+          client through tools shaped for financial reports. It binds to loopback and takes no
+          credentials, because nothing off your machine is meant to reach it. Nothing is hosted: no
+          account, no key, no index. Every answer is read from the filing on your computer.
         </p>
       </header>
 

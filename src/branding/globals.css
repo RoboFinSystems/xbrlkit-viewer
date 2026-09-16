@@ -1,5 +1,5 @@
-/* xbrlkit viewer branding — the RoboSystems palette and fonts, since the
- * viewer is a RoboSystems project.
+/* xbrlkit.com branding — the RoboSystems palette and fonts, since the site
+ * is a RoboSystems project.
  *
  * Palette + fonts copied from the RoboSystems app (see BRANDING.md). The
  * `--rs-*` custom properties below are also what `@robosystems/report-components`
@@ -143,17 +143,14 @@ body {
   gap: 0.75rem;
 }
 
+/* The wordmark is "xbrlkit", lowercase like the package. The viewer is the
+ * site's main function, not its name — "viewer" left the header when /mcp
+ * gave the site a second function. */
 .brand-name {
   font-family: var(--rs-font-heading);
   font-weight: 700;
   font-size: 1.05rem;
   letter-spacing: 0.04em;
-}
-
-/* The wordmark is "xbrlkit", lowercase like the package; "viewer" is the tool. */
-.brand-name-tool {
-  font-weight: 400;
-  opacity: 0.85;
 }
 
 .mode-switch {

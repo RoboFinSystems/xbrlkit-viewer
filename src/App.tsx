@@ -81,9 +81,7 @@ export function App() {
     <div className="app">
       <header className="app-header">
         <div className="brand">
-          <div className="brand-name">
-            xbrlkit <span className="brand-name-tool">viewer</span>
-          </div>
+          <div className="brand-name">xbrlkit</div>
         </div>
 
         <div className="header-right">
