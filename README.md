@@ -126,7 +126,7 @@ The render logic is not in this app — it lives in `@robosystems/report-compone
 ## Support
 
 - [Issues](https://github.com/RoboFinSystems/xbrlkit-viewer/issues)
-- [Wiki](https://github.com/RoboFinSystems/robosystems/wiki)
+- [Documentation](https://robosystems.ai/docs/technical)
 - [Discussions](https://github.com/orgs/RoboFinSystems/discussions)
 
 ## License
