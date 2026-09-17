@@ -30,13 +30,21 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Crawlers that do not run JavaScript read only this. The links let them reach the other
+         two pages and credit RoboSystems, which the app footer does once rendered. -->
     <noscript>
       <h1>xbrlkit</h1>
       <p>
         xbrlkit.com opens SEC filings in the browser: search any listed company and read its 10-K,
-        10-Q, 20-F or 40-F, with no key and no sign-up. /file opens a holon.jsonld or tavi.json
-        report you hold, and /mcp shows how to connect an MCP client to xbrlkit serve. This site
-        requires JavaScript.
+        10-Q, 20-F or 40-F, with no key and no sign-up. <a href="/file">/file</a> opens a
+        holon.jsonld or tavi.json report you hold, and <a href="/mcp">/mcp</a> shows how to connect
+        an MCP client to xbrlkit serve. This site requires JavaScript.
+      </p>
+      <p>
+        <a href="/">Open an SEC filing</a> · <a href="/file">Open a report file</a> ·
+        <a href="/mcp">Connect an MCP client</a> ·
+        <a href="https://github.com/RoboFinSystems/xbrlkit">xbrlkit on GitHub</a> ·
+        <a href="https://robosystems.ai">A RoboSystems project</a>
       </p>
     </noscript>
     <script type="module" src="/src/main.tsx"></script>

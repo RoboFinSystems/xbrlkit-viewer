@@ -241,15 +241,18 @@ Resources:
           FunctionAssociations:
             - EventType: viewer-request
               FunctionARN: !GetAtt ViewerRequestFunction.FunctionARN
-        # The viewer is a single-page app; serve index.html for any unmatched
-        # path (and for the 403 OAC returns on missing keys) so it never 404s.
+        # The site's pages are /, /file, /mcp and /view, which the viewer-request
+        # function maps to real files. Any other path (and the 403 OAC returns for a
+        # missing key) is a real 404, with the apex page as its body so a mistyped
+        # link still lands somewhere useful. It answered 200 until 2026-09-17, which
+        # search engines read as a thin copy of the homepage at every URL (a soft 404).
         CustomErrorResponses:
           - ErrorCode: 403
-            ResponseCode: 200
+            ResponseCode: 404
             ResponsePagePath: /index.html
             ErrorCachingMinTTL: 10
           - ErrorCode: 404
-            ResponseCode: 200
+            ResponseCode: 404
             ResponsePagePath: /index.html
             ErrorCachingMinTTL: 10
         ViewerCertificate: !If
