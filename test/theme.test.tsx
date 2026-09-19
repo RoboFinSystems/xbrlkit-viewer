@@ -39,7 +39,8 @@ beforeEach(() => {
 
 // index.html sets the theme before React loads, so it must reach the same answer.
 describe('the pre-paint script in index.html', () => {
-  const script = read('index.html').match(/<script>([\s\S]*?)<\/script>/)?.[1] ?? ''
+  const page = new DOMParser().parseFromString(read('index.html'), 'text/html')
+  const script = page.querySelector('head script:not([src])')?.textContent ?? ''
   const run = () => new Function(script)()
 
   it('mirrors the hook: its storage key and its dark chrome color', () => {
