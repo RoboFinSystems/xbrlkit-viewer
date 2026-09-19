@@ -7,7 +7,22 @@
          (Chrome honours it in a favicon); the PNG is the black fallback Safari and crawlers use. -->
     <link rel="icon" href="/icon.png" type="image/png" sizes="512x512" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" sizes="any" />
-    <meta name="theme-color" content="#0b0f17" />
+    <meta name="theme-color" content="#ffffff" />
+    <!-- The theme, set before first paint so a dark-mode visitor never sees a white flash.
+         Mirrors src/hooks/useTheme.ts: a pick from the header toggle wins, else the OS setting. -->
+    <script>
+      ;(function () {
+        var theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        try {
+          var stored = localStorage.getItem('holon-viewer:theme')
+          if (stored === 'light' || stored === 'dark') theme = stored
+        } catch (e) {}
+        document.documentElement.dataset.theme = theme
+        if (theme === 'dark') {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#111827')
+        }
+      })()
+    </script>
 
     <!-- Title, description, canonical and the share text differ per lane: the build fills
          this marker from src/pages/routeMeta.ts, and writes file/ and mcp/ copies with theirs. -->
