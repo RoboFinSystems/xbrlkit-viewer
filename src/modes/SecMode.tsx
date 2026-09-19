@@ -134,7 +134,7 @@ export function SecMode({ report, onLoaded, onReset, onNavigate }: SecModeProps)
               <a href={pathForLane('file')} onClick={laneLink('file')}>
                 Open it in File
               </a>
-              . Would rather ask from Claude, Cursor or VS Code?{' '}
+              . Would rather ask from Claude, Cursor or any MCP client?{' '}
               <a href={pathForLane('mcp')} onClick={laneLink('mcp')}>
                 Connect the MCP server
               </a>

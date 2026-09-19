@@ -36,9 +36,9 @@ export const ROUTE_META: Record<Lane, RouteMeta> = {
       'Open a holon.jsonld or tavi.json XBRL financial report in the browser: statements, notes, dimensional facts, in-browser SPARQL or jq query and AI analysis. The file never leaves your machine.',
   },
   mcp: {
-    title: 'xbrlkit MCP server — read a filing in Claude, Cursor or VS Code, locally',
+    title: 'xbrlkit MCP server — read a filing locally in Claude, Cursor or any MCP client',
     description:
-      'Connect Claude, Cursor, VS Code or Claude Code to xbrlkit serve, the local MCP server that reads an XBRL filing on your machine. Nothing hosted: no account, no key.',
+      'Connect Claude, Cursor, VS Code or any other MCP client to xbrlkit serve, the local MCP server that reads an XBRL filing on your machine. Nothing hosted: no account, no key.',
   },
 }
 
