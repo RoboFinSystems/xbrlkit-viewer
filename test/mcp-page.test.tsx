@@ -39,7 +39,6 @@ describe('the launch recipes', () => {
 
   it('point at loopback when the user starts the server', () => {
     expect(MCP_URL.startsWith('http://127.0.0.1:')).toBe(true)
-    expect(SERVE_HTTP).toContain(MCP_URL)
     expect(CLAUDE_CODE_HTTP).toContain(`--transport http xbrlkit ${MCP_URL}`)
     const entry = JSON.parse(CLIENT_HTTP_JSON) as {
       mcpServers: { xbrlkit: { type: string; url: string } }

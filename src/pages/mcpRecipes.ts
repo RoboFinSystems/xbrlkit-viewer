@@ -17,8 +17,7 @@ export const XBRLKIT_PYPI = 'https://pypi.org/project/xbrlkit/'
 export const UV_INSTALL = 'https://docs.astral.sh/uv/getting-started/installation/'
 
 /** Start the server yourself; it listens on loopback. */
-export const SERVE_HTTP = `uvx --from "xbrlkit[mcp]@latest" xbrlkit serve
-# → MCP at ${MCP_URL}`
+export const SERVE_HTTP = `uvx --from "xbrlkit[mcp]@latest" xbrlkit serve`
 
 /** The same, identified to EDGAR. */
 export const SERVE_HTTP_WITH_IDENTITY = `SEC_GOV_USER_AGENT="Your Name you@example.com" \\
