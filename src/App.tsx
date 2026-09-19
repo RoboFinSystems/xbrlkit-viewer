@@ -2,8 +2,9 @@ import type { NormalizedReport } from '@robosystems/report-components'
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
 import type { ReportSource } from './ai/source'
 import { KeysDrawer } from './chat/KeysDrawer'
-import { BotIcon, GearIcon, GitHubIcon } from './components/icons'
+import { BotIcon, GearIcon, GitHubIcon, MoonIcon, SunIcon } from './components/icons'
 import { Spinner } from './components/Spinner'
+import { useTheme } from './hooks/useTheme'
 import { FileMode } from './modes/FileMode'
 import { SecMode } from './modes/SecMode'
 import { McpPage } from './pages/McpPage'
@@ -47,6 +48,8 @@ export function App() {
   // Mounts the lazy drawer on first open, then keeps it mounted (state + layout).
   const [chatMounted, setChatMounted] = useState(false)
   const [keysOpen, setKeysOpen] = useState(false)
+  const { theme, toggle: toggleTheme } = useTheme()
+  const nextTheme = theme === 'dark' ? 'light' : 'dark'
 
   const showLane = useCallback((next: Lane) => {
     setLane(next)
@@ -137,6 +140,15 @@ export function App() {
             onClick={toggleKeys}
           >
             <GearIcon />
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary icon-btn"
+            aria-label={`Switch to ${nextTheme} theme`}
+            title={`Switch to ${nextTheme} theme`}
+            onClick={toggleTheme}
+          >
+            {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
           </button>
           <nav className="mode-switch" role="tablist" aria-label="View">
             <button

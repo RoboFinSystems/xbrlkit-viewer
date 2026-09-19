@@ -71,16 +71,64 @@
     'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
     monospace;
 
+  /* The raised surface — header, cards, drawers, inputs. */
+  --rs-surface: #ffffff;
+  --rs-error-bg: #fef2f2;
+  --rs-error-border: #fecaca;
+
   /* Semantic tokens consumed by @robosystems/report-components */
   --rs-text: var(--rs-gray-900);
   --rs-muted: var(--rs-gray-500);
   --rs-border: var(--rs-gray-200);
   --rs-border-strong: var(--rs-gray-400);
   --rs-subtotal-bg: var(--rs-gray-50);
+  --rs-slicer-bg: var(--rs-gray-50);
   --rs-selected-bg: var(--rs-primary-100);
-  --rs-panel-bg: #ffffff;
+  --rs-panel-bg: var(--rs-surface);
   --rs-success: #047857;
   --rs-error: #dc2626;
+
+  color-scheme: light;
+}
+
+/* ── Dark theme ──
+ * `data-theme` on <html>, set before first paint by index.html and kept by
+ * useTheme. Each gray step keeps its role rather than inverting: 100 is the
+ * page, 50 sits between the page and the surface, 200 is hairlines and code,
+ * 400 and up are text. So the rules below need no dark variants of their own. */
+:root[data-theme='dark'] {
+  --rs-primary-50: #16213a;
+  --rs-primary-100: #1e3264;
+  --rs-primary-300: #3b64b3;
+  --rs-primary-500: #5b8ff7;
+  /* Links and headings, the library's included: the 700 shade does not read on a dark surface. */
+  --rs-primary-700: #8ab4fc;
+  --rs-gray-50: #0f1520;
+  --rs-gray-100: #0b0f17;
+  --rs-gray-200: #263041;
+  --rs-gray-400: #4b5563;
+  --rs-gray-500: #9ca3af;
+  --rs-gray-700: #d1d5db;
+  --rs-gray-900: #e5e7eb;
+
+  --rs-surface: #111827;
+  --rs-error-bg: #2a1417;
+  --rs-error-border: #7f1d1d;
+  --rs-success: #34d399;
+  --rs-error: #f87171;
+
+  /* A filing's own HTML is authored black-on-white, and these tokens cannot
+   * reach inside its frame, so it reads as a sheet of paper. */
+  --rs-document-bg: #ffffff;
+  --rs-document-padding: 0.75rem 1rem;
+  --rs-document-radius: 8px;
+
+  color-scheme: dark;
+}
+
+/* The footer's RoboSystems mark is a black-on-transparent PNG. */
+:root[data-theme='dark'] .app-footer-logo {
+  filter: invert(1);
 }
 
 * {
@@ -98,6 +146,13 @@ body {
   color: var(--rs-text);
   background: var(--rs-gray-100);
   -webkit-font-smoothing: antialiased;
+}
+
+input,
+select,
+textarea {
+  color: inherit;
+  background-color: var(--rs-surface);
 }
 
 /* ── App shell ── */
@@ -130,7 +185,7 @@ body {
   flex-wrap: wrap;
   gap: 0.75rem 1rem;
   padding: 0.75rem 1.5rem;
-  background: #ffffff;
+  background: var(--rs-surface);
   border-bottom: 1px solid var(--rs-border);
   position: sticky;
   top: 0;
@@ -162,7 +217,7 @@ body {
 
 .mode-switch button {
   border: none;
-  background: #ffffff;
+  background: var(--rs-surface);
   padding: 0.45rem 1.1rem;
   font: inherit;
   font-size: 0.85rem;
@@ -194,7 +249,7 @@ body {
   border-top: 1px solid var(--rs-border);
   font-size: 0.75rem;
   color: var(--rs-muted);
-  background: #ffffff;
+  background: var(--rs-surface);
 }
 
 .app-footer-link {
@@ -224,7 +279,7 @@ body {
   width: 0;
   flex-shrink: 0;
   overflow: hidden;
-  background: #ffffff;
+  background: var(--rs-surface);
   border-left: 1px solid var(--rs-border);
   transition: width 0.2s ease;
 }
@@ -336,7 +391,7 @@ body {
   padding: 0.55rem 0.75rem;
   border: 1px solid var(--rs-border);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--rs-surface);
   font: inherit;
   font-size: 0.83rem;
   color: var(--rs-gray-900);
@@ -398,7 +453,7 @@ body {
 }
 
 .chat-msg-error {
-  background: #fef2f2;
+  background: var(--rs-error-bg);
   color: var(--rs-error);
 }
 
@@ -542,7 +597,7 @@ body {
 .chat-readaloud {
   margin-top: 0.4rem;
   border: 1px solid var(--rs-border);
-  background: #ffffff;
+  background: var(--rs-surface);
   border-radius: 999px;
   padding: 0.15rem 0.6rem;
   font: inherit;
@@ -623,7 +678,7 @@ body {
 }
 
 .keys-status-ok {
-  color: #047857;
+  color: var(--rs-success);
 }
 
 .keys-actions {
@@ -660,7 +715,7 @@ body {
   margin-top: 2rem;
   border: 2px dashed var(--rs-border-strong);
   border-radius: 16px;
-  background: #ffffff;
+  background: var(--rs-surface);
   transition:
     border-color 0.15s ease,
     background 0.15s ease;
@@ -694,7 +749,7 @@ body {
 }
 
 .btn-secondary {
-  background: #ffffff;
+  background: var(--rs-surface);
   color: var(--rs-primary-700);
   border: 1px solid var(--rs-border-strong);
 }
@@ -753,8 +808,8 @@ body {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
   border-radius: 10px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  background: var(--rs-error-bg);
+  border: 1px solid var(--rs-error-border);
   color: var(--rs-error);
   font-size: 0.85rem;
 }
@@ -812,7 +867,7 @@ body {
   max-width: 520px;
   margin: 2rem auto;
   padding: 1.75rem;
-  background: #ffffff;
+  background: var(--rs-surface);
   border: 1px solid var(--rs-border);
   border-radius: 16px;
 }
@@ -907,7 +962,7 @@ body {
 .sec-example {
   border: 1px solid var(--rs-border-strong);
   border-radius: 999px;
-  background: #ffffff;
+  background: var(--rs-surface);
   padding: 0.3rem 0.85rem;
   font-family: var(--rs-font-mono);
   font-size: 0.85rem;
@@ -976,7 +1031,7 @@ body {
   z-index: 20;
   left: 0;
   right: 0;
-  background: #ffffff;
+  background: var(--rs-surface);
   border: 1px solid var(--rs-border);
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -1050,7 +1105,7 @@ body {
   padding: 0.7rem 0.9rem;
   border: 1px solid var(--rs-border);
   border-radius: 10px;
-  background: #ffffff;
+  background: var(--rs-surface);
   font: inherit;
   cursor: pointer;
   text-align: left;
@@ -1068,7 +1123,9 @@ body {
   font-family: var(--rs-font-mono);
   font-weight: 700;
   font-size: 0.8rem;
-  color: #ffffff;
+  /* The surface color reads on the 700 fill in both themes: white on the dark
+   * blue, the dark surface on the light blue dark mode lifts it to. */
+  color: var(--rs-surface);
   background: var(--rs-primary-700);
   padding: 0.2rem 0.55rem;
   border-radius: 6px;
@@ -1245,7 +1302,7 @@ body {
   max-width: 760px;
   margin: 0 auto;
   padding: 2rem 2.25rem 2.5rem;
-  background: #ffffff;
+  background: var(--rs-surface);
   border: 1px solid var(--rs-border);
   border-radius: 16px;
   line-height: 1.55;
