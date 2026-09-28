@@ -162,7 +162,7 @@ function ModelRow() {
 /**
  * The ElevenLabs preset selector — model, bitrate and voice settings — its own
  * titled section inside the ElevenLabs card. Fidelity vs. first-word latency is
- * the user's call (v3 sounds better and starts later), so it sits right under
+ * the user's call (Quality sounds better and starts later), so it sits right under
  * the key that pays for it. Persisted via `usePersistentVoicePreset`.
  */
 function VoicePresetRow() {
