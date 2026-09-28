@@ -12,7 +12,7 @@
  * `anthropic-dangerous-direct-browser-access` header the API's CORS allows.
  */
 import Anthropic from '@anthropic-ai/sdk'
-import { DEFAULT_MODEL_ID } from './models'
+import { DEFAULT_MODEL_ID, effortFor } from './models'
 import type {
   AIMessage,
   AIProvider,
@@ -89,12 +89,15 @@ export class AnthropicProvider implements AIProvider {
   }
 
   async createMessage(params: CreateMessageParams): Promise<AIResponse> {
+    const model = params.model ?? DEFAULT_MODEL_ID
+    const effort = effortFor(model)
     const res = await this.client.messages.create({
-      model: params.model ?? DEFAULT_MODEL_ID,
+      model,
       max_tokens: params.maxTokens ?? DEFAULT_MAX_TOKENS,
       system: params.system,
       messages: toAnthropicMessages(params.messages),
       tools: toAnthropicTools(params.tools),
+      ...(effort ? { output_config: { effort } } : {}),
     })
 
     const blocks = fromAnthropicBlocks(res.content)
