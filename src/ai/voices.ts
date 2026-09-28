@@ -2,14 +2,13 @@
  * The ElevenLabs presets the read-aloud can run with — the voice *settings*,
  * not the voice: which model, at what bitrate, with what stability and style.
  *
- * The default is the content-machine house setting
- * (`tools/generate_voiceover_audio.py`), chosen there by ear from an A/B of
- * the same sentence and for measured reasons: eleven_turbo_v2_5 stochastically
- * inserted multi-second dead air mid-segment (2–3.5 s across four takes,
- * 2026-07-27) and eleven_v3 does not (12 takes, none over 1.5 s); 192 kbps
- * removes the compression mush that reads as slurring; style 0 keeps the read
- * even. Turbo stays offered because it starts sooner — v3 is the quality
- * model, not the latency model, and this surface plays live.
+ * The default is eleven_v4_turbo at 192 kbps. This surface plays live, and on
+ * the same 440-char answer (2026-09-28) v4 Turbo returned in ~5 s where
+ * eleven_v3 took ~17 s, with no mid-clip dead air in 10 takes and a more
+ * expressive read by ear. 192 kbps removes the compression mush that reads as
+ * slurring. Turbo v2.5 stays offered because it returns in ~1 s, though it can
+ * insert multi-second dead air mid-segment (2–3.5 s across four takes,
+ * 2026-07-27). The content machine pre-renders and stays on eleven_v3.
  *
  * A preset id flows Settings (`usePersistentVoicePreset`) → `useTts` →
  * `synthesizeSpeech`. Same shape and lifecycle as `models.ts`.
@@ -38,13 +37,12 @@ export interface VoicePreset {
 export const VOICE_PRESETS: VoicePreset[] = [
   {
     id: 'quality',
-    label: 'Quality — Eleven v3',
+    label: 'Quality — Eleven v4 Turbo',
     blurb:
-      'The house narration setting: the highest-fidelity model at 192 kbps, an even read. Takes longer to start speaking.',
-    modelId: 'eleven_v3',
+      'An expressive read at 192 kbps, starting in a few seconds. Takes a little longer than Fast.',
+    modelId: 'eleven_v4_turbo',
     outputFormat: 'mp3_44100_192',
-    // eleven_v3 accepts only 0, 0.5 or 1 for stability (Creative / Natural / Robust).
-    voiceSettings: { stability: 0.5, similarity_boost: 0.8, style: 0, use_speaker_boost: true },
+    voiceSettings: { stability: 0.7, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true },
   },
   {
     id: 'fast',

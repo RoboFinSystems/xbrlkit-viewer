@@ -28,13 +28,13 @@ const requestOf = (fetchMock: ReturnType<typeof vi.fn>) => {
 }
 
 describe('synthesizeSpeech', () => {
-  it('sends the default preset: eleven_v3 at 192 kbps with the house voice settings', async () => {
+  it('sends the default preset: eleven_v4_turbo at 192 kbps with its voice settings', async () => {
     const fetchMock = mockAudioFetch()
     await synthesizeSpeech('xi-key', 'Net income was $1,085 million.')
     const { url, headers, body } = requestOf(fetchMock)
     expect(url).toContain(`/v1/text-to-speech/${DEFAULT_VOICE_ID}?output_format=mp3_44100_192`)
     expect(headers['xi-api-key']).toBe('xi-key')
-    expect(body.model_id).toBe('eleven_v3')
+    expect(body.model_id).toBe('eleven_v4_turbo')
     expect(body.voice_settings).toEqual(voicePreset('quality').voiceSettings)
     // The amount is spoken as words, not left for the voice's own normalizer.
     expect(body.text).toBe('Net income was one thousand eighty five million dollars.')
