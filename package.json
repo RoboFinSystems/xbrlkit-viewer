@@ -20,12 +20,12 @@
     "feature:create": "./bin/create-feature.sh"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.122.0",
-    "@comunica/query-sparql-rdfjs": "^5.2.3",
+    "@anthropic-ai/sdk": "^0.128.0",
+    "@comunica/query-sparql-rdfjs": "^5.4.1",
     "@robosystems/report-components": "^0.8.0",
     "jq-wasm": "^3.0.0-jq-1.8.2",
     "jsonld": "^9.0.0",
-    "n3": "^2.1.1",
+    "n3": "^2.7.12",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-markdown": "^10.1.0",
