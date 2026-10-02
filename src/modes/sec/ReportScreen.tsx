@@ -20,8 +20,8 @@ interface ReportScreenProps {
 }
 
 /**
- * Open the chosen filing from the CDN — its Tavi model when it has one, else
- * its holon — hand it to `App`, and render it through the shared
+ * Open the chosen filing from the CDN — its holon when it has one, else its
+ * Tavi model — hand it to `App`, and render it through the shared
  * `SectionedReport`. Every section is in memory once the file is parsed, so a
  * section loads instantly.
  */
@@ -38,7 +38,7 @@ export function ReportScreen({ filer, filing, report, onLoaded, onBack }: Report
 
   useEffect(() => {
     if (!url) {
-      setError('This filing has no Tavi model or holon yet.')
+      setError('This filing has no holon or Tavi model yet.')
       return
     }
     let cancelled = false

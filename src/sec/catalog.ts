@@ -141,14 +141,14 @@ export async function fetchFiler(ticker: string): Promise<FilerCatalog | null> {
 }
 
 /**
- * The file to open for a filing: the Tavi model when it has one (parsed
- * directly, tens of milliseconds), else the holon. Null when the filing's
- * artifacts are not written yet.
+ * The file to open for a filing: the holon when it has one — the complete
+ * report — else the Tavi model. Null when the filing's artifacts are not
+ * written yet.
  */
 export function reportFileUrl(filing: CatalogFiling): string | null {
   const reps = filing.representations ?? []
   return (
-    reps.find((r) => r.kind === 'tavi')?.url ?? reps.find((r) => r.kind === 'holon')?.url ?? null
+    reps.find((r) => r.kind === 'holon')?.url ?? reps.find((r) => r.kind === 'tavi')?.url ?? null
   )
 }
 
