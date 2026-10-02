@@ -1,7 +1,7 @@
 /**
  * The SEC lane, and the page `/` opens on — the SEC filing catalog on the
  * RoboSystems public data CDN. No key, no backend: search a listed filer,
- * pick a filing, and the viewer opens its Tavi model (or holon) by URL — the
+ * pick a filing, and the viewer opens its holon (or Tavi model) by URL — the
  * same file `xbrlkit` writes and the roboinvestor company pages render. The
  * opened report is handed to `App` like a dropped file, so the chat runs over
  * it the same way: jq or SPARQL, in the browser.

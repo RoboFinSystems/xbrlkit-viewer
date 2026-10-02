@@ -99,9 +99,9 @@ describe('reportFileUrl and periodOf', () => {
     })),
   })
 
-  it('prefers the Tavi model, falls back to the holon, and is null with neither', () => {
-    expect(reportFileUrl(filing(['holon', 'tavi']))).toBe('https://cdn.example/tavi')
-    expect(reportFileUrl(filing(['document', 'holon']))).toBe('https://cdn.example/holon')
+  it('prefers the holon, falls back to the Tavi model, and is null with neither', () => {
+    expect(reportFileUrl(filing(['tavi', 'holon']))).toBe('https://cdn.example/holon')
+    expect(reportFileUrl(filing(['document', 'tavi']))).toBe('https://cdn.example/tavi')
     expect(reportFileUrl(filing(['document']))).toBeNull()
   })
 

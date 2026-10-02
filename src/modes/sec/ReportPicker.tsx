@@ -35,7 +35,7 @@ function formatDate(iso: string | null): string {
 
 /**
  * The selected filer's filings, newest first, from its catalog file on the
- * CDN. Pick one to open its Tavi model or holon; a filing whose artifacts are
+ * CDN. Pick one to open its holon or Tavi model; a filing whose artifacts are
  * not written yet is listed but cannot be opened.
  */
 export function ReportPicker({ filer, onSelect }: ReportPickerProps) {
