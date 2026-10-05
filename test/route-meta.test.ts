@@ -40,6 +40,8 @@ describe('route meta', () => {
     expect(canonicalUrl('sec')).toBe('https://xbrlkit.com/')
     expect(canonicalUrl('file')).toBe('https://xbrlkit.com/file')
     expect(canonicalUrl('mcp')).toBe('https://xbrlkit.com/mcp')
+    expect(canonicalUrl('cli')).toBe('https://xbrlkit.com/cli')
+    expect(canonicalUrl('python')).toBe('https://xbrlkit.com/python')
   })
 
   it('writes the canonical into both the link and og:url', () => {
@@ -63,7 +65,9 @@ describe('route meta', () => {
     expect(routeFileName('sec')).toBe('index.html')
     expect(routeFileName('file')).toBe('file/index.html')
     expect(routeFileName('mcp')).toBe('mcp/index.html')
-    expect(CLONED_LANES).toEqual(['file', 'mcp'])
+    expect(routeFileName('cli')).toBe('cli/index.html')
+    expect(routeFileName('python')).toBe('python/index.html')
+    expect(CLONED_LANES).toEqual(['file', 'mcp', 'cli', 'python'])
   })
 })
 

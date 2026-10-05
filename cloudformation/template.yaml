@@ -160,7 +160,7 @@ Resources:
       Name: !Sub xbrlkit-viewer-${Environment}-viewer-request
       AutoPublish: true
       FunctionConfig:
-        Comment: Redirect www. to the canonical domain; map /file, /mcp and /view to their pages
+        Comment: Redirect www. to the canonical domain; map /file, /mcp, /cli, /python and /view to their pages
         Runtime: cloudfront-js-2.0
       FunctionCode: !Sub |
         var LANE_PAGES = {
@@ -168,6 +168,10 @@ Resources:
           '/file/': '/file/index.html',
           '/mcp': '/mcp/index.html',
           '/mcp/': '/mcp/index.html',
+          '/cli': '/cli/index.html',
+          '/cli/': '/cli/index.html',
+          '/python': '/python/index.html',
+          '/python/': '/python/index.html',
           '/view': '/index.html',
           '/view/': '/index.html'
         };
@@ -241,7 +245,7 @@ Resources:
           FunctionAssociations:
             - EventType: viewer-request
               FunctionARN: !GetAtt ViewerRequestFunction.FunctionARN
-        # The site's pages are /, /file, /mcp and /view, which the viewer-request
+        # The site's pages are /, /file, /mcp, /cli, /python and /view, which the viewer-request
         # function maps to real files. Any other path (and the 403 OAC returns for a
         # missing key) is a real 404, with the apex page as its body so a mistyped
         # link still lands somewhere useful. It answered 200 until 2026-09-17, which

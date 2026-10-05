@@ -4,7 +4,7 @@
  *
  * The build writes the blocks into static HTML (`vite.config.ts`): the apex
  * `index.html` gets the SEC block in place of the `<!--route-head-->` marker,
- * and `file/index.html` and `mcp/index.html` are the same page with their own
+ * and each other lane's `<lane>/index.html` is the same page with its own
  * block swapped in, so a crawler or a link preview reads the right meta
  * without running JavaScript. `applyRouteMeta` keeps the head in step when the
  * visitor moves between lanes in the browser.
@@ -40,6 +40,16 @@ export const ROUTE_META: Record<Lane, RouteMeta> = {
     description:
       'Connect Claude, Cursor, VS Code or any other MCP client to xbrlkit serve, the local MCP server that reads an XBRL filing on your machine. Nothing hosted: no account, no key.',
   },
+  cli: {
+    title: 'xbrlkit CLI — fetch, build and query SEC and XBRL filings from your terminal',
+    description:
+      'The xbrlkit command line: write an SEC or ESEF filing to disk as a holon.jsonld, tavi.json, xBRL-JSON or graph for scripts and pipelines, query it, or open it in the browser. Runs on your machine: no account, no key.',
+  },
+  python: {
+    title: 'xbrlkit — a Python library for parsing SEC and ESEF XBRL filings',
+    description:
+      'pip install xbrlkit: parse an SEC 10-K or 10-Q, an ESEF report or a local XBRL filing in Python by ticker, accession, LEI or path, then write it as holon.jsonld, TAVI, xBRL-JSON or a property graph and query it. MIT, runs locally.',
+  },
 }
 
 const START = '<!--route-head:start-->'
@@ -52,7 +62,7 @@ export function canonicalUrl(lane: Lane): string {
   return lane === 'sec' ? `${SITE_URL}/` : `${SITE_URL}${LANE_PATHS[lane]}`
 }
 
-/** Where the build writes the lane's HTML: `index.html`, `file/index.html`, `mcp/index.html`. */
+/** Where the build writes the lane's HTML: `index.html`, or `<lane>/index.html`. */
 export function routeFileName(lane: Lane): string {
   return lane === 'sec' ? 'index.html' : `${LANE_PATHS[lane].slice(1)}/index.html`
 }

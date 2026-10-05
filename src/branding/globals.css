@@ -1298,7 +1298,7 @@ textarea {
 }
 
 /* ── MCP page (`/mcp`) ── */
-.mcp-page {
+.local-page {
   max-width: 760px;
   margin: 0 auto;
   padding: 2rem 2.25rem 2.5rem;
@@ -1308,30 +1308,30 @@ textarea {
   line-height: 1.55;
 }
 
-.mcp-page h1 {
+.local-page h1 {
   font-family: var(--rs-font-heading);
   margin: 0 0 0.75rem;
   font-size: 1.25rem;
 }
 
-.mcp-page h3 {
+.local-page h3 {
   margin: 2rem 0 0.5rem;
   font-size: 1rem;
   font-weight: 600;
 }
 
-.mcp-page p,
-.mcp-page li {
+.local-page p,
+.local-page li {
   margin: 0 0 0.75rem;
   color: var(--rs-gray-700);
 }
 
-.mcp-page ul {
+.local-page ul {
   margin: 0;
   padding-left: 1.2rem;
 }
 
-.mcp-page code {
+.local-page code {
   padding: 0.05rem 0.3rem;
   border-radius: 4px;
   background: var(--rs-gray-200);
@@ -1339,19 +1339,47 @@ textarea {
   font-size: 0.85em;
 }
 
-.mcp-page a {
+.local-page a {
   color: var(--rs-primary-700);
 }
 
-.mcp-foot {
+.local-foot {
   margin-top: 2rem;
   padding-top: 1rem;
   border-top: 1px solid var(--rs-border);
   font-size: 0.85rem;
 }
 
-.mcp-foot p {
-  margin: 0;
+.local-foot p {
+  margin: 0 0 0.5rem;
+}
+
+.local-foot p:last-child {
+  margin-bottom: 0;
+}
+
+/* MCP or CLI, under the header's one Local segment. Links, so a crawler on
+ * either page finds the other. */
+.local-switch {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  max-width: 760px;
+  margin: 0 auto 1rem;
+}
+
+.local-switch a {
+  padding: 0.3rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--rs-gray-700);
+  text-decoration: none;
+}
+
+.local-switch a[aria-current='page'] {
+  background: var(--rs-gray-200);
+  color: inherit;
+  font-weight: 600;
 }
 
 /* A recipe with its Copy button. */
@@ -1386,7 +1414,7 @@ textarea {
 }
 
 @media (max-width: 600px) {
-  .mcp-page {
+  .local-page {
     padding: 1.5rem 1.25rem 2rem;
   }
 }

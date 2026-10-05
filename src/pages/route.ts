@@ -1,29 +1,43 @@
 import { holonUrlParam } from '../modes/openUrl'
 
 /**
- * The site has three lanes. `/` is the SEC lane: search a listed filer and
+ * The site has five lanes. `/` is the SEC lane: search a listed filer and
  * open a filing, no file and no key needed, so it is what the address opens
- * on. `/file` opens a `holon.jsonld` or `tavi.json` the visitor holds, and
- * `/mcp` is the page on connecting an MCP client to `xbrlkit serve`.
+ * on. `/file` opens a `holon.jsonld` or `tavi.json` the visitor holds. `/mcp`,
+ * `/cli` and `/python` are the local lanes, the pages on running xbrlkit on
+ * your own machine, in the order a reader should meet them: connecting an MCP
+ * client to `xbrlkit serve`, the command line, the library. They share one
+ * segment of the header's switch.
  *
  * `/?url=…` belongs to no lane's path and must keep working on the apex
  * forever: `xbrlkit view` and the SEC catalog both write that link, and the
  * CLI names this origin in its CORS header. A `?url=` on `/` therefore opens
  * the File lane, which loads the linked report.
  *
- * CloudFront rewrites `/file` and `/mcp` to their own `index.html` (so each
+ * CloudFront rewrites `/file` and the local paths to their own `index.html` (so each
  * carries its own meta) and answers every other path with the apex page, so
  * the lane is resolved here from the location, with no router. Keep the
  * paths in step with the edge function in `cloudformation/template.yaml`.
  */
-export type Lane = 'sec' | 'file' | 'mcp'
+export type Lane = 'sec' | 'file' | 'mcp' | 'cli' | 'python'
 
-export const LANES: readonly Lane[] = ['sec', 'file', 'mcp']
+export const LANES: readonly Lane[] = ['sec', 'file', 'mcp', 'cli', 'python']
+
+export type LocalLane = Extract<Lane, 'mcp' | 'cli' | 'python'>
+
+/** The pages about running xbrlkit locally, in the order their switch shows them. */
+export const LOCAL_LANES: readonly LocalLane[] = ['mcp', 'cli', 'python']
+
+export function isLocalLane(lane: Lane): lane is LocalLane {
+  return (LOCAL_LANES as readonly Lane[]).includes(lane)
+}
 
 export const LANE_PATHS: Record<Lane, string> = {
   sec: '/',
   file: '/file',
   mcp: '/mcp',
+  cli: '/cli',
+  python: '/python',
 }
 
 /**
@@ -45,6 +59,8 @@ export const VIEW_PATH = '/view'
 export function laneFromPath(pathname: string): Lane {
   const path = pathname.replace(/\/index\.html$/, '').replace(/\/+$/, '')
   if (path === LANE_PATHS.mcp) return 'mcp'
+  if (path === LANE_PATHS.cli) return 'cli'
+  if (path === LANE_PATHS.python) return 'python'
   if (path === LANE_PATHS.file) return 'file'
   // `/view` is the apex page under another name (see VIEW_PATH), like any other path.
   return 'sec'
