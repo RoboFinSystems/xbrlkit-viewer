@@ -14,6 +14,8 @@ function renderAt(address: string): string {
 const SEC_SEARCH = 'Search by ticker or company name'
 const FILE_DROPZONE = 'Open a holon.jsonld or tavi.json'
 const MCP_HEADING = 'Read a filing in your own AI client'
+const CLI_HEADING = 'Read a filing from your terminal'
+const PYTHON_HEADING = 'Read a filing in Python'
 
 describe('the lane an address opens', () => {
   afterEach(() => {
@@ -44,13 +46,32 @@ describe('the lane an address opens', () => {
     expect(html).not.toContain(SEC_SEARCH)
   })
 
-  it('opens the File and MCP lanes at their own paths', () => {
+  it('opens the File and local lanes at their own paths', () => {
     expect(renderAt('/file')).toContain(FILE_DROPZONE)
     expect(renderAt('/mcp')).toContain(MCP_HEADING)
+    expect(renderAt('/cli')).toContain(CLI_HEADING)
+    expect(renderAt('/python')).toContain(PYTHON_HEADING)
   })
 
-  it('orders the tabs SEC, File, MCP', () => {
+  it('orders the tabs SEC, File, Local', () => {
     const tabs = [...renderAt('/').matchAll(/role="tab"[^>]*>([^<]+)</g)].map((m) => m[1])
-    expect(tabs).toEqual(['SEC', 'File', 'MCP'])
+    expect(tabs).toEqual(['SEC', 'File', 'Local'])
+  })
+
+  // MCP, CLI and Python share the header's Local segment and switch between themselves by link.
+  it('selects Local on every local page, with links to all three in order', () => {
+    for (const [path, current] of [
+      ['/mcp', 'MCP'],
+      ['/cli', 'CLI'],
+      ['/python', 'Python'],
+    ]) {
+      const html = renderAt(path)
+      expect(html, path).toMatch(/role="tab" aria-selected="true">Local</)
+      const nav = html.match(/<nav class="local-switch"[\s\S]*?<\/nav>/)?.[0] ?? ''
+      const links = [...nav.matchAll(/href="([^"]+)"/g)].map((m) => m[1])
+      expect(links, path).toEqual(['/mcp', '/cli', '/python'])
+      expect(html, path).toMatch(new RegExp(`aria-current="page"[^>]*>${current}<`))
+    }
+    expect(renderAt('/')).not.toContain('class="local-switch"')
   })
 })

@@ -20,18 +20,25 @@ describe('laneFromLocation', () => {
     expect(laneFromLocation('/', '?url=')).toBe('sec')
   })
 
-  it('names the File and MCP lanes, with a trailing slash or index.html', () => {
+  it('names the File, MCP, CLI and Python lanes, with a trailing slash or index.html', () => {
     for (const path of ['/file', '/file/', '/file/index.html']) {
       expect(laneFromLocation(path, ''), path).toBe('file')
     }
     for (const path of ['/mcp', '/mcp/', '/mcp/index.html']) {
       expect(laneFromLocation(path, ''), path).toBe('mcp')
     }
+    for (const path of ['/cli', '/cli/', '/cli/index.html']) {
+      expect(laneFromLocation(path, ''), path).toBe('cli')
+    }
+    for (const path of ['/python', '/python/', '/python/index.html']) {
+      expect(laneFromLocation(path, ''), path).toBe('python')
+    }
   })
 
   it('keeps a ?url= on the File lane and never moves MCP', () => {
     expect(laneFromLocation('/file', `?url=${encodeURIComponent(CDN)}`)).toBe('file')
     expect(laneFromLocation('/mcp', `?url=${encodeURIComponent(CDN)}`)).toBe('mcp')
+    expect(laneFromLocation('/cli', `?url=${encodeURIComponent(CDN)}`)).toBe('cli')
   })
 
   it('is the SEC lane for any other path', () => {

@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { CodeBlock } from '../components/CodeBlock'
 import {
   CLAUDE_CODE_HTTP,
@@ -12,6 +13,7 @@ import {
   XBRLKIT_PYPI,
   XBRLKIT_REPO,
 } from './mcpRecipes'
+import { pathForLane, type Lane } from './route'
 
 /**
  * `/mcp` — how to connect an MCP client to `xbrlkit serve`, the local server
@@ -21,10 +23,18 @@ import {
  * to keep true. It deliberately names no tool count — that number has moved
  * three times in ten days. Its title and description live with the other
  * lanes' in `routeMeta.ts`; the app shell applies them.
+ *
+ * It is the way in to running xbrlkit locally; `/cli` is the advanced use,
+ * linked from the foot and nowhere above it.
  */
-export function McpPage() {
+export function McpPage({ onNavigate }: { onNavigate: (lane: Lane) => void }) {
+  const toCli = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault()
+    onNavigate('cli')
+  }
+
   return (
-    <article className="mcp-page">
+    <article className="local-page">
       <header>
         <h1>Read a filing in your own AI client</h1>
         <p>
@@ -101,7 +111,15 @@ export function McpPage() {
         </ul>
       </section>
 
-      <footer className="mcp-foot">
+      <footer className="local-foot">
+        <p>
+          Want the filing itself, as a holon, a TAVI model or a graph on disk, for a script or a
+          pipeline?{' '}
+          <a href={pathForLane('cli')} onClick={toCli}>
+            Use the command line
+          </a>
+          .
+        </p>
         <p>
           The tools, the switches and what <code>load_filing</code> takes are in the{' '}
           <a href={SERVE_README} target="_blank" rel="noreferrer noopener">

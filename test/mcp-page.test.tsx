@@ -49,12 +49,13 @@ describe('the launch recipes', () => {
 
 describe('McpPage', () => {
   it('renders every recipe, the registry name, and no tool count', () => {
-    const html = renderToStaticMarkup(<McpPage />)
+    const html = renderToStaticMarkup(<McpPage onNavigate={() => {}} />)
     expect(html).toContain('xbrlkit[mcp]@latest')
     expect(html).toContain('--transport')
     expect(html).toContain(MCP_URL)
     expect(html).toContain(REGISTRY_NAME)
     expect(html).toContain('serve/README.md')
+    expect(html).toContain('href="/cli"')
     // The count moves with every release; the page links the README instead.
     expect(html).not.toMatch(/\b(ten|fourteen|eighteen|\d+) tools\b/)
   })

@@ -13,9 +13,9 @@ import {
 /**
  * Each lane's static HTML. The apex `index.html` gets the SEC lane's head in
  * place of its marker (and the analytics beacon when a token is set); after
- * Vite has written it, `file/index.html` and `mcp/index.html` are emitted as
- * the same page with their own head, so the hashed asset paths and the body
- * have one source. CloudFront maps `/file` and `/mcp` to those files.
+ * Vite has written it, every other lane's `<lane>/index.html` is emitted as
+ * the same page with its own head, so the hashed asset paths and the body have
+ * one source. CloudFront maps each lane's path to its file.
  * `enforce: 'post'` puts `generateBundle` after Vite's HTML plugin, which is
  * what emits `index.html` into the bundle.
  */

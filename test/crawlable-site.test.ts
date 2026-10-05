@@ -8,9 +8,11 @@ const read = (path: string): string => readFileSync(join(process.cwd(), path), '
 describe('what a crawler without JavaScript gets', () => {
   const noscript = read('index.html').match(/<noscript>([\s\S]*?)<\/noscript>/)?.[1] ?? ''
 
-  it('links the other two pages and credits RoboSystems, not just names them', () => {
+  it('links the other pages and credits RoboSystems, not just names them', () => {
     expect(noscript).toContain('<a href="/file">')
     expect(noscript).toContain('<a href="/mcp">')
+    expect(noscript).toContain('<a href="/cli">')
+    expect(noscript).toContain('<a href="/python">')
     expect(noscript).toContain('<a href="https://robosystems.ai">')
   })
 })

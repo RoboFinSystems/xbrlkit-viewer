@@ -7,8 +7,18 @@ import { Spinner } from './components/Spinner'
 import { useTheme } from './hooks/useTheme'
 import { FileMode } from './modes/FileMode'
 import { SecMode } from './modes/SecMode'
+import { CliPage } from './pages/CliPage'
 import { McpPage } from './pages/McpPage'
-import { laneFromLocation, laneFromPath, pathForLane, type Lane } from './pages/route'
+import { PythonPage } from './pages/PythonPage'
+import {
+  isLocalLane,
+  laneFromLocation,
+  laneFromPath,
+  LOCAL_LANES,
+  pathForLane,
+  type Lane,
+  type LocalLane,
+} from './pages/route'
 import { applyRouteMeta, VIEWER_REPO } from './pages/routeMeta'
 
 // Lazy: the chat drawer pulls in Comunica, the Anthropic SDK, and markdown
@@ -16,7 +26,9 @@ import { applyRouteMeta, VIEWER_REPO } from './pages/routeMeta'
 // the report-render path lean.
 const ChatDrawer = lazy(() => import('./chat/ChatDrawer').then((m) => ({ default: m.ChatDrawer })))
 
-type ViewerLane = Exclude<Lane, 'mcp'>
+type ViewerLane = Exclude<Lane, LocalLane>
+
+const LOCAL_LABELS: Record<LocalLane, string> = { mcp: 'MCP', cli: 'CLI', python: 'Python' }
 
 function currentLane(): Lane {
   return laneFromLocation(window.location.pathname, window.location.search)
@@ -33,12 +45,17 @@ function syncHead(): void {
 }
 
 export function App() {
-  // `/` is the SEC lane, `/file` the File lane (and `/?url=`), `/mcp` the connect page.
+  // `/` is the SEC lane, `/file` the File lane (and `/?url=`), `/mcp`, `/cli`, `/python` the local pages.
   const [lane, setLane] = useState<Lane>(currentLane)
-  // The last viewer lane, so the chat's hint still names it while MCP is showing.
+  // The last viewer lane, so the chat's hint still names it while a local page is showing.
   const [viewerLane, setViewerLane] = useState<ViewerLane>(() => {
     const initial = currentLane()
-    return initial === 'mcp' ? 'sec' : initial
+    return isLocalLane(initial) ? 'sec' : initial
+  })
+  // The last local page, which the header's Local segment returns to.
+  const [localLane, setLocalLane] = useState<LocalLane>(() => {
+    const initial = currentLane()
+    return isLocalLane(initial) ? initial : 'mcp'
   })
   const [report, setReport] = useState<NormalizedReport | null>(null)
   // The loaded file's queryable form (RDF store or Tavi document), for the chat.
@@ -53,7 +70,8 @@ export function App() {
 
   const showLane = useCallback((next: Lane) => {
     setLane(next)
-    if (next !== 'mcp') setViewerLane(next)
+    if (isLocalLane(next)) setLocalLane(next)
+    else setViewerLane(next)
   }, [])
 
   // Back and Forward move between the lanes like any other pages.
@@ -170,10 +188,10 @@ export function App() {
             <button
               type="button"
               role="tab"
-              aria-selected={lane === 'mcp'}
-              onClick={() => navigate('mcp')}
+              aria-selected={isLocalLane(lane)}
+              onClick={() => navigate(localLane)}
             >
-              MCP
+              Local
             </button>
           </nav>
         </div>
@@ -182,8 +200,33 @@ export function App() {
       <div className="app-body">
         <div className="app-content">
           <main className="app-main">
-            {lane === 'mcp' ? (
-              <McpPage />
+            {isLocalLane(lane) ? (
+              <>
+                <nav className="local-switch" aria-label="Run locally">
+                  {LOCAL_LANES.map((local) => (
+                    <a
+                      key={local}
+                      href={pathForLane(local)}
+                      aria-current={lane === local ? 'page' : undefined}
+                      onClick={(event) => {
+                        // A modified click opens a new tab, as a link should.
+                        if (event.metaKey || event.ctrlKey || event.shiftKey) return
+                        event.preventDefault()
+                        navigate(local)
+                      }}
+                    >
+                      {LOCAL_LABELS[local]}
+                    </a>
+                  ))}
+                </nav>
+                {lane === 'python' ? (
+                  <PythonPage onNavigate={navigate} />
+                ) : lane === 'cli' ? (
+                  <CliPage onNavigate={navigate} />
+                ) : (
+                  <McpPage onNavigate={navigate} />
+                )}
+              </>
             ) : lane === 'file' ? (
               <FileMode
                 report={report}
