@@ -1,12 +1,13 @@
 # xbrlkit viewer
 
-This is [xbrlkit.com](https://xbrlkit.com), the browser side of [xbrlkit](https://github.com/RoboFinSystems/xbrlkit). Its main function is the viewer: a static, client-side renderer for `holon.jsonld` and `tavi.json` financial reports — the analog of Arelle's `ixbrl-viewer`. A holon is a portable RDF artifact and a Tavi model is compiled JSON, not self-rendering HTML, so the viewer reconstructs the financial statements from the document and layers on interactive inspection, in-browser query, and AI analysis. No sign-up and no backend — search a company or open a file and go. The site's wordmark is plain `xbrlkit`, and it has three lanes: `/` opens the SEC lane (any listed filer's filings, no file needed), `/file` opens a report you hold, and `/mcp` is the page on connecting an MCP client.
+This is [xbrlkit.com](https://xbrlkit.com), the browser side of [xbrlkit](https://github.com/RoboFinSystems/xbrlkit). Its main function is the viewer: a static, client-side renderer for `holon.jsonld` and `tavi.json` financial reports — the analog of Arelle's `ixbrl-viewer`. A holon is a portable RDF artifact and a Tavi model is compiled JSON, not self-rendering HTML, so the viewer reconstructs the financial statements from the document and layers on interactive inspection, in-browser query, and AI analysis. No sign-up and no backend — search a company or open a file and go. The site's wordmark is plain `xbrlkit`, and it has five lanes: `/` opens the SEC lane (any listed filer's filings, no file needed), `/file` opens a report you hold, and `/mcp`, `/cli` and `/python` are the pages on running xbrlkit locally: connecting an MCP client, the command line, and the library.
 
 **Live at <https://xbrlkit.com>.** From the command line, `uvx xbrlkit view NVDA` renders a filing here without downloading anything by hand. The viewer is a RoboSystems project; the earlier `holon.robosystems.ai` address keeps working as an alias.
 
 - **SEC** (`/`, the landing): Search any listed filer by ticker or name, or start from an example ticker, and open one of its filings — every 10-K, 10-Q, 20-F and 40-F since 2024 — straight from the RoboSystems public data CDN, where each filing sits as `holon.jsonld` and `tavi.json` — the viewer opens the holon, the complete report, and falls back to the Tavi model. Same renderer, same in-browser chat; no key and no sign-up.
 - **File** (`/file`): Open a local `holon.jsonld` or `tavi.json` (the same filing as a Project Tavi compiled model) and render the full report — offline, no API key, no backend, no network call. A report on the web opens by link: `/?url=https://…/holon.jsonld` (or `…/tavi.json`) opens it in this lane. `xbrlkit view` and its MCP `view_filing` tool open the same thing at `/view?url=…`, a second name for the apex page that lets the analytics count those opens apart from web links. Both links stay for good: the SEC catalog and earlier xbrlkit releases write `/?url=`, newer releases write `/view?url=` (the host must allow cross-origin reads; the RoboSystems public data CDN does, and so does `xbrlkit view`'s loopback server). Try it locally with `npm run preview` — the dev server cannot serve a `?url=` link, Vite reserves that query for asset imports.
 - **MCP** (`/mcp`): <https://xbrlkit.com/mcp> shows how to connect Claude, Cursor, VS Code or Claude Code to `xbrlkit serve`, the local MCP server in the package behind this viewer — client-launched over stdio or pointed at the loopback URL, nothing hosted. The page is the recipe and links the package's [serve README](https://github.com/RoboFinSystems/xbrlkit/blob/main/xbrlkit/serve/README.md) for the rest.
+- **CLI** (`/cli`) and **Python** (`/python`): The pages on running xbrlkit from the command line and as a library
 - **Statement Rendering**: Reconstructs the complete report — balance sheet, income statement, cash flow, equity, and every disclosure section — from the holon's scene / boundary / projection named graphs, with a table-of-contents sidebar for navigation.
 - **Dimensional Facts & Disclosures**: Renders dimensional breakdowns (segments and other axes) and text-block note disclosures alongside the numeric statements, at full fidelity.
 - **Fact Inspection**: Inspect any fact — its element, period, unit, and the calculation rule it participates in — directly in the statement tables.
@@ -104,7 +105,7 @@ Keys are entered in the app's keys drawer and stored only in your browser.
 - N3.js quad store + Comunica for in-browser RDF and SPARQL; jq-wasm (in a Web Worker) for in-browser jq over Tavi models
 - Anthropic SDK for AI; ElevenLabs for voice
 - The RoboSystems public data CDN for the SEC lane: the filer catalog and each filing's `tavi.json` / `holon.jsonld`, read with plain `fetch`
-- Three lanes without a router: the lane comes from the address (`src/pages/route.ts`), and each lane's title, description, canonical and share text come from one table (`src/pages/routeMeta.ts`)
+- Five lanes without a router: the lane comes from the address (`src/pages/route.ts`), and each lane's title, description, canonical and share text come from one table (`src/pages/routeMeta.ts`)
 
 **Rendering:**
 
@@ -112,8 +113,8 @@ The render logic is not in this app — it lives in `@robosystems/report-compone
 
 **Infrastructure:**
 
-- Builds to pure static files — no backend at runtime. The build writes `index.html` for the SEC lane plus `file/index.html` and `mcp/index.html`, the same page with that lane's head, so crawlers and link previews read each lane's own meta without JavaScript
-- A CloudFront Function maps `/file` and `/mcp` to those pages and `/view` to the apex page (and redirects `www.` to the apex); every other path is answered with the apex page
+- Builds to pure static files — no backend at runtime. The build writes `index.html` for the SEC lane plus `file/`, `mcp/`, `cli/` and `python/` `index.html`, the same page with that lane's head, so crawlers and link previews read each lane's own meta without JavaScript
+- A CloudFront Function maps `/file`, `/mcp`, `/cli` and `/python` to those pages and `/view` to the apex page (and redirects `www.` to the apex); every other path is answered with the apex page
 - The share card `public/og.png` is rendered from `src/branding/og-card.html` with headless Chrome; the command is at the top of that file
 - Hosted on AWS S3 + CloudFront
 - CloudFormation-managed; deployed via GitHub Actions
