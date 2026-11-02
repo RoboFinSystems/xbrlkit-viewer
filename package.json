@@ -14,11 +14,12 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:watch": "vitest",
+    "test": "NODE_OPTIONS=--no-experimental-webstorage vitest run",
+    "test:watch": "NODE_OPTIONS=--no-experimental-webstorage vitest",
     "test:all": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
     "feature:create": "./bin/create-feature.sh"
   },
+  "//scripts": "The vitest scripts turn off Node's Web Storage: Node 25+ defines `localStorage` on globalThis, undefined until a --localstorage-file is given, and vitest's happy-dom environment does not replace a global the runtime already owns, so tests would read undefined.",
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",
     "@comunica/query-sparql-rdfjs": "^5.4.1",
@@ -50,6 +51,6 @@
     "vitest": "^4.1.12"
   },
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=26.0.0"
   }
 }
