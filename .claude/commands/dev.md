@@ -6,7 +6,7 @@ Start the Vite dev server for the xbrlkit viewer.
 
 ## Prerequisites
 
-- **Node 24+** and dependencies installed — `test -d node_modules || npm install`.
+- **Node 26+** and dependencies installed — `test -d node_modules || npm install`.
 - **No backend, and no `.env` needed to start.** This is a static client-side app; API keys are entered at runtime in the keys drawer, not through the environment.
 
 ## Start
