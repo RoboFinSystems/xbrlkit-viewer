@@ -26,27 +26,27 @@ interface RouteMeta {
 
 export const ROUTE_META: Record<Lane, RouteMeta> = {
   sec: {
-    title: 'xbrlkit — open any SEC filing in the browser',
+    title: 'xbrlkit: open any SEC filing in the browser',
     description:
-      'Search any listed company and open its 10-K, 10-Q, 20-F or 40-F since 2024 in the browser: financial statements, notes, dimensional XBRL facts, in-browser query and AI analysis. No key, no sign-up.',
+      'Search any listed company and open its 10-K, 10-Q, 20-F or 40-F since 2024 in the browser: financial statements, notes, dimensional XBRL facts, in-browser query, and AI analysis with your own Anthropic key. No sign-up.',
   },
   file: {
-    title: 'Open a holon.jsonld or tavi.json financial report — xbrlkit',
+    title: 'xbrlkit: open a holon.jsonld or tavi.json financial report',
     description:
-      'Open a holon.jsonld or tavi.json XBRL financial report in the browser: statements, notes, dimensional facts, in-browser SPARQL or jq query and AI analysis. The file never leaves your machine.',
+      'Open a holon.jsonld or tavi.json XBRL financial report in the browser: statements, notes, dimensional facts, in-browser SPARQL or jq query, and AI analysis with your own Anthropic key. The file never leaves your machine.',
   },
   mcp: {
-    title: 'xbrlkit MCP server — read a filing locally in Claude, Cursor or any MCP client',
+    title: 'xbrlkit MCP server: read a filing locally in Claude, Cursor or any MCP client',
     description:
       'Connect Claude, Cursor, VS Code or any other MCP client to xbrlkit serve, the local MCP server that reads an XBRL filing on your machine. Nothing hosted: no account, no key.',
   },
   cli: {
-    title: 'xbrlkit CLI — fetch, build and query SEC and XBRL filings from your terminal',
+    title: 'xbrlkit CLI: fetch, build and query SEC and XBRL filings from your terminal',
     description:
       'The xbrlkit command line: write an SEC or ESEF filing to disk as a holon.jsonld, tavi.json, xBRL-JSON or graph for scripts and pipelines, query it, or open it in the browser. Runs on your machine: no account, no key.',
   },
   python: {
-    title: 'xbrlkit — a Python library for parsing SEC and ESEF XBRL filings',
+    title: 'xbrlkit: a Python library for parsing SEC and ESEF XBRL filings',
     description:
       'pip install xbrlkit: parse an SEC 10-K or 10-Q, an ESEF report or a local XBRL filing in Python by ticker, accession, LEI or path, then write it as holon.jsonld, TAVI, xBRL-JSON or a property graph and query it. MIT, runs locally.',
   },

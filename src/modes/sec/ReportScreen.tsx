@@ -106,6 +106,20 @@ export function ReportScreen({ filer, filing, report, onLoaded, onBack }: Report
     </div>
   )
 
+  const nextStep = (
+    <p className="hint report-next">
+      Put this company beside your own books, or every filer beside each other:{' '}
+      <a
+        href="https://robosystems.ai/pricing#sec-repository"
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        the SEC repository, 14 days to try
+      </a>
+      .
+    </p>
+  )
+
   if (error) {
     return (
       <div className="sectioned-report">
@@ -129,7 +143,12 @@ export function ReportScreen({ filer, filing, report, onLoaded, onBack }: Report
       key={filing.accession}
       sections={sections}
       loadSection={loadSection}
-      header={header}
+      header={
+        <>
+          {header}
+          {nextStep}
+        </>
+      }
     />
   )
 }

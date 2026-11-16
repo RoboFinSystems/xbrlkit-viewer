@@ -92,9 +92,8 @@ export function SecMode({ report, onLoaded, onReset, onNavigate }: SecModeProps)
         <div>
           <h1>Open any SEC filing</h1>
           <p className="hint">
-            Every listed filer&apos;s 10-K, 10-Q, 20-F and 40-F since 2024, as{' '}
-            <code>tavi.json</code> and <code>holon.jsonld</code> on the RoboSystems public data CDN.
-            No key, no sign-up — search a company and open a filing.
+            Statements, notes and every tagged number, rebuilt from the filing&apos;s XBRL. Any
+            listed company&apos;s 10-K, 10-Q, 20-F or 40-F since 2024; search one and open a filing.
           </p>
         </div>
       </div>
@@ -127,7 +126,7 @@ export function SecMode({ report, onLoaded, onReset, onNavigate }: SecModeProps)
               xbrlkit reads XBRL financial reports in the browser. It rebuilds a filing&apos;s
               balance sheet, income statement, cash flow and every note from its structured data,
               shows the dimensional facts behind each number, and lets you query the report or ask
-              an AI about it, with nothing installed.
+              an AI about it with your own Anthropic key, with nothing installed.
             </p>
             <p>
               Holding a <code>holon.jsonld</code> or <code>tavi.json</code> of your own?{' '}
