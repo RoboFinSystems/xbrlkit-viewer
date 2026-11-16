@@ -161,7 +161,8 @@ export function FileMode({ report, fileName, onLoaded, onReset }: FileModeProps)
         <h1>Open a holon.jsonld or tavi.json</h1>
         <p>
           Drag &amp; drop a report&apos;s <code>holon.jsonld</code> or <code>tavi.json</code> here,
-          or choose a file. Everything runs in your browser.
+          or choose a file. Everything runs in your browser. Every SEC filing on the home page is
+          published in both formats on the RoboSystems public data CDN.
         </p>
         <div
           style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', justifyContent: 'center' }}

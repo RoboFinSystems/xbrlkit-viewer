@@ -9,6 +9,7 @@ import { FileMode } from './modes/FileMode'
 import { SecMode } from './modes/SecMode'
 import { CliPage } from './pages/CliPage'
 import { McpPage } from './pages/McpPage'
+import { XBRLKIT_REPO } from './pages/mcpRecipes'
 import { PythonPage } from './pages/PythonPage'
 import {
   isLocalLane,
@@ -19,7 +20,7 @@ import {
   type Lane,
   type LocalLane,
 } from './pages/route'
-import { applyRouteMeta, VIEWER_REPO } from './pages/routeMeta'
+import { applyRouteMeta } from './pages/routeMeta'
 
 // Lazy: the chat drawer pulls in Comunica, the Anthropic SDK, and markdown
 // (~2 MB). Load that chunk only when the user first opens the drawer, keeping
@@ -251,17 +252,17 @@ export function App() {
               target="_blank"
               rel="noreferrer noopener"
             >
-              <img className="app-footer-logo" src="/images/logos/logo_black.png" alt="" />a
-              RoboSystems project
+              <img className="app-footer-logo" src="/images/logos/logo_black.png" alt="" />
+              Part of RoboSystems, the open-source knowledge graph for finance
             </a>
             <a
               className="app-footer-link"
-              href={VIEWER_REPO}
+              href={XBRLKIT_REPO}
               target="_blank"
               rel="noreferrer noopener"
             >
               <GitHubIcon />
-              GitHub
+              xbrlkit on GitHub
             </a>
           </footer>
         </div>

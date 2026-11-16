@@ -1158,6 +1158,11 @@ textarea {
   font-size: 0.95rem;
 }
 
+/* The one line after a rendered SEC filing, pointing at the SEC repository trial. */
+.report-next {
+  margin: 0.25rem 0 0.75rem;
+}
+
 /* Outbound link to the public equity-research portal — shown only when the
    on-screen ticker has coverage. Pushed to the trailing edge of the row. */
 .research-link {

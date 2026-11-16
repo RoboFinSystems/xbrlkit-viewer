@@ -44,6 +44,13 @@ describe('route meta', () => {
     expect(canonicalUrl('python')).toBe('https://xbrlkit.com/python')
   })
 
+  // The AI analysis runs on the visitor's own Anthropic key, so the SEC lane
+  // promises no sign-up, never "no key".
+  it('does not promise the SEC lane needs no key', () => {
+    expect(ROUTE_META.sec.description).not.toMatch(/no key/i)
+    expect(ROUTE_META.sec.description).toContain('your own Anthropic key')
+  })
+
   it('writes the canonical into both the link and og:url', () => {
     for (const lane of LANES) {
       const head = renderRouteHead(lane)
