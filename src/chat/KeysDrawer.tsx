@@ -140,7 +140,7 @@ function ModelRow() {
       </div>
       <p className="hint keys-blurb">
         Which Claude model answers. Opus is the most capable and most expensive; Sonnet costs far
-        less — pick to control your spend.
+        less. Pick one to control your spend.
       </p>
       <select
         className="keys-input"
@@ -225,7 +225,7 @@ function VoiceIdRow({ voice }: { voice: PersistentApiKey }) {
           className="keys-input"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder={`Voice ID — ${DEFAULT_VOICE_ID}`}
+          placeholder={`Voice ID · ${DEFAULT_VOICE_ID}`}
           autoComplete="off"
           spellCheck={false}
         />
@@ -265,7 +265,7 @@ export function KeysDrawer({ open, onClose }: KeysDrawerProps) {
         <div className="chat-messages keys-body">
           <p className="hint">
             Bring your own keys. Each is stored only in this browser and sent directly to its
-            provider when used — never to this app.
+            provider when used, never to this app.
           </p>
 
           <KeyRow
@@ -281,7 +281,7 @@ export function KeysDrawer({ open, onClose }: KeysDrawerProps) {
             title="ElevenLabs"
             blurb={
               <>
-                Optional — reads answers and summaries aloud. Sent directly to ElevenLabs.{' '}
+                Optional: reads answers and summaries aloud. Sent directly to ElevenLabs.{' '}
                 <a
                   href="https://try.elevenlabs.io/v9z3wzm97gk3"
                   target="_blank"
