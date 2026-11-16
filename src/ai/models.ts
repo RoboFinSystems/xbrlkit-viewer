@@ -30,7 +30,7 @@ export const MODELS: ChatModel[] = [
   {
     id: 'claude-sonnet-5-5',
     label: 'Sonnet 5.5',
-    blurb: 'Latest Sonnet — strong quality at a fraction of Opus’s cost.',
+    blurb: 'Latest Sonnet: strong quality at a fraction of Opus’s cost.',
     effort: 'medium',
   },
   {
@@ -46,13 +46,13 @@ export const MODELS: ChatModel[] = [
   {
     id: 'claude-opus-5-5',
     label: 'Opus 5.5',
-    blurb: 'Most capable — roughly twice Sonnet’s cost per token.',
+    blurb: 'Most capable, roughly twice Sonnet’s cost per token.',
     effort: 'medium',
   },
   {
     id: 'claude-opus-4-8',
     label: 'Opus 4.8',
-    blurb: 'Previous Opus generation — highest cost per token.',
+    blurb: 'Previous Opus generation, highest cost per token.',
   },
 ]
 

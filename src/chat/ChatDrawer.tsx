@@ -153,7 +153,7 @@ export function ChatDrawer({
 
   // Empty-state copy + tap-to-run example questions.
   const emptyLead =
-    'Ask about this report and get answers pulled straight from its own figures — never guessed. Start with a question, or get a quick summary.'
+    "Ask about this report and get answers read from the report's own figures. Start with a question, or get a quick summary."
   const examples = [
     'What is total assets?',
     'What was net income?',

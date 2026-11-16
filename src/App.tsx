@@ -245,7 +245,7 @@ export function App() {
             )}
           </main>
           <footer className="app-footer">
-            <span>© 2026 RFS LLC. All rights reserved.</span>
+            <span>© 2026 RFS LLC. MIT licensed.</span>
             <a
               className="app-footer-link"
               href="https://robosystems.ai"

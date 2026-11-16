@@ -88,7 +88,7 @@ export function TickerSearch({ onSelect, selected }: TickerSearchProps) {
   }
 
   const placeholder = selected
-    ? `${selected.ticker} — ${selected.name}`
+    ? `${selected.ticker} · ${selected.name}`
     : 'Search by ticker or company name…'
 
   return (
