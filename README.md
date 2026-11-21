@@ -96,7 +96,8 @@ Keys are entered in the app's keys drawer and stored only in your browser.
 - S3 + CloudFront for static hosting, provisioned via CloudFormation
 - Custom domains are optional, from two repo variables: `VIEWER_DOMAIN` (the canonical name, in a public Route53 hosted zone; an apex domain also gets its `www.` form, redirected to it at the edge) and `VIEWER_LEGACY_DOMAIN` (an earlier name, served as an alias of the same distribution, never redirected, because a published `xbrlkit view` allows only the origin it was built with to read the report it serves)
 - Optional: a `CF_ANALYTICS_TOKEN` repo variable holding a Cloudflare Web Analytics site token; the deploy passes it to the build, and without it the site carries no beacon
-- A `production` GitHub environment on the repo (required reviewer; deployment refs `main`, `release/*`): the deploy workflow's gate job binds it, so every production deploy pauses for approval
+- A `production` GitHub environment on the repo (required reviewer; deployment refs `main`, `release/*` and `v*` tags): the deploy workflow's gate job binds it, so every production deploy pauses for approval
+- Optional: an `ACTIONS_TOKEN` secret able to push to the protected `main` and `release/*` branches; the release workflow pushes its version bump with it
 
 ## Architecture
 
@@ -123,7 +124,8 @@ The render logic is not in this app; it lives in `@robosystems/report-components
 
 ## CI/CD
 
-- **`deploy.yml`**: Static-site deploy to S3 + CloudFront (manual dispatch, approval-gated by the `production` environment)
+- **`create-release.yml`**: Cuts a release (manual dispatch: major, minor or patch). It bumps `package.json` on `main`, creates `release/<version>` and tags `v<version>` with generated release notes (curated notes in `.github/release-notes/v<version>.md` replace them), then dispatches `deploy.yml` at the tag unless told not to
+- **`deploy.yml`**: Static-site deploy to S3 + CloudFront (manual dispatch, approval-gated by the `production` environment). Run it from a release tag so the Deployments tab shows which version is live; a run from `main` is a one-off
 - **`test.yml`**: Automated testing on pull requests
 
 ## Support

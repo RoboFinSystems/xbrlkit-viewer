@@ -22,9 +22,12 @@ name: Deploy
 #      run CloudFormation + S3 + CloudFront.
 #
 # Manual only — deployments are an explicit action, never automatic on push.
+# The normal route is create-release.yml, which cuts v<version> and dispatches
+# this workflow at that tag, so the Deployments tab names the live version.
+# Dispatching from main is for one-offs.
 #
 # Approval-gated: the `gate` job binds the `production` GitHub environment
-# (required reviewer, deployment refs main / release/*), so a dispatched run
+# (required reviewer, deployment refs main / release/* / v* tags), so a dispatched run
 # waits under "Review deployments" before anything runs — nothing is built or
 # synced for an unapproved run. The rules live in the repo's environment
 # settings, not here; a fork without that environment deploys ungated.
@@ -298,6 +301,7 @@ jobs:
         run: |
           echo "## 🚀 xbrlkit viewer deployed (${{ inputs.environment }})" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Ref:** \`${GITHUB_REF_NAME}\` @ \`${GITHUB_SHA::7}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**URL:** ${{ steps.outputs.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
           echo "**Bucket:** \`${{ steps.outputs.outputs.bucket }}\`" >> "$GITHUB_STEP_SUMMARY"
           echo "**Distribution:** \`${{ steps.outputs.outputs.distribution }}\`" >> "$GITHUB_STEP_SUMMARY"

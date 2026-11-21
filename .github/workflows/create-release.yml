@@ -1,0 +1,225 @@
+name: Create Release
+
+# Cuts a versioned release of the viewer, the same shape as the app repos:
+# bump package.json on main, branch release/<version>, tag v<version> through
+# the shared tag-release workflow (curated notes in
+# .github/release-notes/v<version>.md replace the generated changelog), then
+# optionally dispatch deploy.yml at the tag. Deploying from the tag is what
+# makes the Deployments tab name the version that is live.
+#
+# The viewer has no staging, so the only deploy target is prod, and the deploy
+# run still waits for approval on the `production` environment.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+      deploy_to:
+        description: 'Deploy the tag after cutting it'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - prod
+          - none
+
+jobs:
+  create-branch:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      new_version: ${{ steps.new-version.outputs.new_version }}
+      branch_name: ${{ steps.new-version.outputs.branch_name }}
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+          # ACTIONS_TOKEN required to push to protected main branch
+          token: ${{ secrets.ACTIONS_TOKEN || github.token }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '26'
+
+      - name: Get current version
+        id: current-version
+        run: |
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+          echo "current_version=$CURRENT_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Calculate new version
+        id: new-version
+        run: |
+          CURRENT_VERSION="${{ steps.current-version.outputs.current_version }}"
+          VERSION_TYPE="${{ inputs.version_type }}"
+
+          IFS='.' read -r major minor patch <<< "$CURRENT_VERSION"
+
+          case "$VERSION_TYPE" in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+          esac
+
+          NEW_VERSION="${major}.${minor}.${patch}"
+          BRANCH_NAME="release/${NEW_VERSION}"
+
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          echo "branch_name=$BRANCH_NAME" >> "$GITHUB_OUTPUT"
+          echo "New version: $NEW_VERSION"
+          echo "Branch name: $BRANCH_NAME"
+
+      - name: Check if branch already exists
+        run: |
+          BRANCH_NAME="${{ steps.new-version.outputs.branch_name }}"
+
+          if git show-ref --verify --quiet "refs/heads/$BRANCH_NAME" || git show-ref --verify --quiet "refs/remotes/origin/$BRANCH_NAME"; then
+            echo "❌ Branch $BRANCH_NAME already exists"
+            exit 1
+          else
+            echo "✅ Branch $BRANCH_NAME does not exist, proceeding..."
+          fi
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Update main branch version
+        run: |
+          CURRENT_VERSION="${{ steps.current-version.outputs.current_version }}"
+          NEW_VERSION="${{ steps.new-version.outputs.new_version }}"
+
+          echo "Updating main branch version from $CURRENT_VERSION to $NEW_VERSION"
+
+          # npm version writes package.json and package-lock.json, so no
+          # install runs here and the registry is off the release path.
+          npm version "$NEW_VERSION" --no-git-tag-version
+
+          git add package.json package-lock.json
+          git commit -m "Release v$NEW_VERSION"
+          git push origin main
+
+      - name: Create release branch
+        run: |
+          BRANCH_NAME="${{ steps.new-version.outputs.branch_name }}"
+
+          echo "Creating release branch: $BRANCH_NAME"
+          git checkout -b "$BRANCH_NAME"
+          git push origin "$BRANCH_NAME"
+          echo "✅ Release branch $BRANCH_NAME created and pushed"
+
+  create-tag:
+    needs: create-branch
+    permissions:
+      contents: write
+    uses: RoboFinSystems/robosystems/.github/workflows/tag-release.yml@main
+    with:
+      branch_ref: ${{ needs.create-branch.outputs.branch_name }}
+      product_name: 'xbrlkit viewer'
+      product_description: 'Static web viewer for XBRL financial reports: SEC filings from the public catalog, or a local holon.jsonld / tavi.json, rendered in the browser with no backend'
+      project_kind: 'static single-page web application (Vite + React)'
+      live_url: 'https://xbrlkit.com'
+    secrets: inherit
+
+  # Dispatched as its own run so the deploy is monitored (and approved) on its
+  # own. workflow_dispatch is exempt from GitHub's "GITHUB_TOKEN events don't
+  # trigger workflows" rule, so the default token works; ACTIONS_TOKEN is
+  # preferred when available.
+  deploy-prod:
+    needs: [create-tag]
+    if: inputs.deploy_to == 'prod'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      actions: write
+    outputs:
+      run_id: ${{ steps.dispatch.outputs.run_id }}
+    steps:
+      - name: Dispatch prod deployment
+        id: dispatch
+        env:
+          GH_TOKEN: ${{ secrets.ACTIONS_TOKEN || github.token }}
+        run: |
+          TAG="${{ needs.create-tag.outputs.tag_name }}"
+          echo "🚀 Dispatching prod deployment from tag $TAG"
+
+          gh workflow run deploy.yml \
+            --repo ${{ github.repository }} \
+            --ref "$TAG" \
+            -f environment=prod
+
+          sleep 5
+
+          # Dispatched at the tag, so filtering by the tag ref avoids
+          # grabbing an unrelated run.
+          RUN_ID=$(gh run list \
+            --repo ${{ github.repository }} \
+            --workflow=deploy.yml \
+            --branch "$TAG" \
+            --limit 1 \
+            --json databaseId \
+            --jq '.[0].databaseId')
+
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+          echo "✅ Prod deployment dispatched: https://github.com/${{ github.repository }}/actions/runs/$RUN_ID"
+
+  create-summary:
+    needs: [create-branch, create-tag, deploy-prod]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    permissions: {}
+    steps:
+      - name: Create summary
+        env:
+          PROD_RUN_ID: ${{ needs.deploy-prod.outputs.run_id }}
+          TAG: ${{ needs.create-tag.outputs.tag_name }}
+        run: |
+          {
+            echo "## xbrlkit viewer Release Created"
+            echo ""
+            echo "| Property | Value |"
+            echo "|----------|-------|"
+            echo "| Version | ${{ needs.create-tag.outputs.version }} |"
+            echo "| Tag | \`$TAG\` |"
+            echo "| Branch | \`${{ needs.create-branch.outputs.branch_name }}\` |"
+            echo "| Type | ${{ inputs.version_type }} |"
+            echo "| Deploy Target | ${{ inputs.deploy_to }} |"
+            echo ""
+            echo "**Release URL:** ${{ needs.create-tag.outputs.release_url }}"
+            echo "**Live:** [xbrlkit.com](https://xbrlkit.com)"
+            echo ""
+            if [ -n "$PROD_RUN_ID" ]; then
+              echo "### Deployment"
+              echo ""
+              echo "- **Production**: [View Run](https://github.com/${{ github.repository }}/actions/runs/$PROD_RUN_ID) (waits for approval on the \`production\` environment)"
+            else
+              echo "### Next Steps"
+              echo ""
+              echo "Release tag $TAG created (no deployment). To deploy it:"
+              echo "\`gh workflow run deploy.yml --ref $TAG -f environment=prod\`"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
