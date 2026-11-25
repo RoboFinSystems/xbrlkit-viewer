@@ -1,6 +1,6 @@
 /**
- * The commands the CLI page shows. They mirror xbrlkit's own README ("Usage"
- * and "View & explore"), which is the source of truth — a change there is a
+ * The commands the CLI page shows. They mirror xbrlkit's own README ("Usage"),
+ * which is the source of truth — a change there is a
  * change here. `@latest` does what it does on the MCP page: without it uvx
  * keeps reusing the environment it built the first time. None of these needs
  * an extra; `serve` is the one command that does, and it lives on `/mcp`.

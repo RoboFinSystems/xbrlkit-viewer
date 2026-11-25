@@ -1,138 +1,88 @@
 # xbrlkit viewer
 
-Part of xbrlkit, from RoboSystems, the open-source knowledge graph for finance.
+**The browser viewer for [xbrlkit](https://github.com/RoboFinSystems/xbrlkit), the XBRL toolkit from [RoboSystems](https://github.com/RoboFinSystems/robosystems), the open-source knowledge graph for finance.** Served at [xbrlkit.com](https://xbrlkit.com): search a public company and read its filing as a rendered report, or open a report file you hold. No sign-up and no backend.
 
-This is [xbrlkit.com](https://xbrlkit.com), the browser side of [xbrlkit](https://github.com/RoboFinSystems/xbrlkit). Its main function is the viewer: a static, client-side renderer for `holon.jsonld` and `tavi.json` financial reports, the analog of Arelle's `ixbrl-viewer`. A holon is a portable RDF artifact and a Tavi model is compiled JSON, not self-rendering HTML, so the viewer reconstructs the financial statements from the document and layers on interactive inspection, in-browser query, and AI analysis. No sign-up and no backend: search a company or open a file and go. The site's wordmark is plain `xbrlkit`, and it has five lanes: `/` opens the SEC lane (any listed filer's filings, no file needed), `/file` opens a report you hold, and `/mcp`, `/cli` and `/python` are the pages on running xbrlkit locally: connecting an MCP client, the command line, and the library.
+A report arrives as a `holon.jsonld` or a `tavi.json`, which is data, not a page. The viewer rebuilds the financial statements and notes from it in the browser, and lets you inspect any number or ask questions of the report with AI on your own key. From a terminal, `uvx xbrlkit view NVDA` opens a filing here.
 
-**Live at <https://xbrlkit.com>.** From the command line, `uvx xbrlkit view NVDA` renders a filing here without downloading anything by hand. The viewer is a RoboSystems project; the earlier `holon.robosystems.ai` address keeps working as an alias.
+## What it does
 
-- **SEC** (`/`, the landing): Search any listed filer by ticker or name, or start from an example ticker, and open one of its filings (every 10-K, 10-Q, 20-F and 40-F since 2024) straight from the RoboSystems public data CDN, where each filing sits as `holon.jsonld` and `tavi.json`; the viewer opens the holon, the complete report, and falls back to the Tavi model. Same renderer, same in-browser chat on your own Anthropic key; no sign-up.
-- **File** (`/file`): Open a local `holon.jsonld` or `tavi.json` (the same filing as a Project Tavi compiled model) and render the full report: offline, no API key to view (the AI chat uses your own Anthropic key), no backend, no network call. A report on the web opens by link: `/?url=https://…/holon.jsonld` (or `…/tavi.json`) opens it in this lane. `xbrlkit view` and its MCP `view_filing` tool open the same thing at `/view?url=…`, a second name for the apex page that lets the analytics count those opens apart from web links. Both links stay for good: the SEC catalog and earlier xbrlkit releases write `/?url=`, newer releases write `/view?url=` (the host must allow cross-origin reads; the RoboSystems public data CDN does, and so does `xbrlkit view`'s loopback server). Try it locally with `npm run preview`; the dev server cannot serve a `?url=` link, Vite reserves that query for asset imports.
-- **MCP** (`/mcp`): <https://xbrlkit.com/mcp> shows how to connect Claude, Cursor, VS Code or Claude Code to `xbrlkit serve`, the local MCP server in the package behind this viewer, client-launched over stdio or pointed at the loopback URL, nothing hosted. The page is the recipe and links the package's [serve README](https://github.com/RoboFinSystems/xbrlkit/blob/main/xbrlkit/serve/README.md) for the rest.
-- **CLI** (`/cli`) and **Python** (`/python`): The pages on running xbrlkit from the command line and as a library
-- **Statement Rendering**: Reconstructs the complete report (balance sheet, income statement, cash flow, equity, and every disclosure section) from the holon's scene / boundary / projection named graphs, with a table-of-contents sidebar for navigation.
-- **Dimensional Facts & Disclosures**: Renders dimensional breakdowns (segments and other axes) and text-block note disclosures alongside the numeric statements, at full fidelity.
-- **Fact Inspection**: Inspect any fact (its element, period, unit, and the calculation rule it participates in) directly in the statement tables.
-- **AI Analysis**: Ask questions of the loaded report in natural language. Claude, on your own Anthropic key, answers by querying the report in your browser (MCP-style tools): SPARQL over a holon's RDF, jq over a Tavi model's JSON, so responses are grounded in the report's actual facts. The two hand-offs are the same shape (a describe tool, then one query tool), so the report's representation is the only thing that differs.
-- **One-Click Summary**: Generate an AI narrative overview of the report on demand.
-- **Voice**: Have summaries and answers read aloud via ElevenLabs text-to-speech, with a configurable voice and quality preset: Eleven v4 Turbo by default, or Turbo v2.5 when you would rather it start speaking sooner.
-- **In-Browser Query Engines**: A Comunica SPARQL engine runs client-side over a holon's RDF, and jq (compiled to WebAssembly, in a Web Worker with a wall-clock limit) over a Tavi model; both power the AI's query tool with no server round-trip.
-- **Bring-Your-Own Keys**: Anthropic and ElevenLabs API keys are entered in a keys drawer and persisted only in your browser, never sent to an app backend (there isn't one).
+- **SEC** (`/`): search any listed filer by ticker or name and open one of its filings (every 10-K, 10-Q, 20-F and 40-F since 2024), read from the RoboSystems public data CDN
+- **File** (`/file`): open a local `holon.jsonld` or `tavi.json` and render the full report, offline, with no network call
+- **Links**: `/?url=https://…/holon.jsonld` opens a report on the web; `xbrlkit view` and the MCP `view_filing` tool open theirs at `/view?url=…`
+- **Statements**: the balance sheet, income statement, cash flow, equity and every disclosure section, with a table of contents
+- **Dimensions and notes**: segment and other breakdowns, and the text of the notes, beside the numbers
+- **Fact inspection**: any number's element, period, unit and the calculation it belongs to
+- **AI chat**: ask the report a question; Claude answers by querying the report in your browser, SPARQL over a holon or jq over a Tavi model
+- **Summary**: a narrative overview of the report on demand
+- **Voice**: summaries and answers read aloud through ElevenLabs
+- **Your own keys**: Anthropic and ElevenLabs keys go in a drawer and stay in your browser; viewing needs none
+- **MCP, CLI and Python** (`/mcp`, `/cli`, `/python`): how to run xbrlkit on your own machine, as an MCP server, from the command line and as a library
 
 ## Quick Start
 
+Needs Node.js 26. No API and no keys.
+
 ```bash
-npm install      # Install dependencies
-npm run dev      # Start the dev server (Vite, default http://localhost:5173)
+npm install
+npm run dev              # http://localhost:5173
 ```
 
-The dev server opens on the SEC lane; `/file` takes the bundled sample report or your own `holon.jsonld` or `tavi.json`. Build either from any SEC filing with [`xbrlkit`](https://github.com/RoboFinSystems/xbrlkit), or skip the file entirely: `uvx xbrlkit view NVDA` serves a filing from your machine and opens it in the hosted viewer.
+The dev server opens on the SEC lane; `/file` takes the bundled sample report or your own file. To try a `?url=` link, use `npm run preview`: the dev server cannot serve one, because Vite reserves that query.
 
-### Configuration
+No setting is required. To change one, copy `.env.example` to `.env`:
 
-No lane needs configuration. **SEC Mode** reads the filer catalog and the report files from the RoboSystems public data CDN (`https://public.robosystems.ai`) directly from the browser. To point it at a staging CDN or a local bucket, copy the env template and set the URL:
+| Variable                                              | Purpose                                                                             |
+| ----------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `VITE_FILINGS_CDN_URL`                                | The CDN the SEC lane reads; defaults to `https://public.robosystems.ai`             |
+| `VITE_LOCAL_REPORT_COMPONENTS`                        | `true` renders with a sibling `robosystems-report-components` checkout's build      |
+| `VITE_RESEARCH_CATALOG_URL`, `VITE_RESEARCH_BASE_URL` | The research portal a filing's page links to                                        |
+| `VITE_CF_ANALYTICS_TOKEN`                             | Adds the Cloudflare Web Analytics beacon to the build; unset, the site carries none |
 
-```bash
-cp .env.example .env
-# VITE_FILINGS_CDN_URL=https://public.robosystems.ai
-```
+### Deploying your own
 
-**Analytics.** A build with `VITE_CF_ANALYTICS_TOKEN` set appends the [Cloudflare Web Analytics](https://www.cloudflare.com/web-analytics/) beacon to every page. It is cookieless and counts page views and referrers; it never sees a report, a query or a key. Builds without the token, local and fork builds included, carry no beacon.
+1. Fork this repository.
+2. Set the repo variables `AWS_ROLE_ARN`, `AWS_ACCOUNT_ID` and `AWS_REGION`, for an IAM role that trusts the repository through GitHub OIDC and may run CloudFormation, S3 and CloudFront.
+3. Create a `production` GitHub environment with a required reviewer; every deploy waits there for approval.
+4. Run the `deploy.yml` workflow. It builds the site and deploys the stack in [`cloudformation/`](cloudformation/).
 
-## Development Commands
+Optional repo variables: `VIEWER_DOMAIN` gives the site a custom domain in a Route53 hosted zone (an apex domain also gets `www.`, redirected to it), `VIEWER_LEGACY_DOMAIN` serves an earlier name as an alias, and `CF_ANALYTICS_TOKEN` turns on the analytics beacon. An `ACTIONS_TOKEN` secret that can push to `main` and `release/*` lets the release workflow push its version bump.
 
-### Core Development
-
-```bash
-npm run dev              # Start the Vite dev server
-npm run build            # Production build → dist/ (pure static files)
-npm run preview          # Preview the production build locally
-```
-
-### Testing
+## Development
 
 ```bash
-npm run test:all         # format:check + lint + typecheck + test + build (the CI gate)
-npm run test             # Run the Vitest test suite
+npm run dev              # development server on port 5173
+npm run build            # production build to dist/ (npm run preview to serve it)
+npm run test             # Vitest suite
 npm run test:watch       # Vitest in watch mode
+npm run test:all         # format check, lint, typecheck, tests and build (the CI gate)
+npm run lint             # ESLint (lint:fix to fix)
+npm run format:check     # Prettier (format to write)
+npm run typecheck        # TypeScript
 ```
 
-### Code Quality
+The rendering comes from [`@robosystems/report-components`](https://www.npmjs.com/package/@robosystems/report-components) ([robosystems-report-components](https://github.com/RoboFinSystems/robosystems-report-components)), shared with the RoboLedger app. Changes are made there and reach the viewer through a version bump: `npm install @robosystems/report-components@latest`.
 
-```bash
-npm run lint             # ESLint validation
-npm run lint:fix         # Auto-fix linting issues
-npm run format           # Prettier code formatting
-npm run format:check     # Check formatting compliance
-npm run typecheck        # TypeScript type checking
-```
-
-### SDLC Commands
-
-```bash
-npm run feature:create   # Create a feature branch
-```
-
-### Prerequisites
-
-#### System Requirements
-
-- Node.js 26+ (LTS)
-- npm
-- Modern browser (Chrome, Firefox, Safari, Edge)
-
-#### API Keys (bring-your-own, optional)
-
-Keys are entered in the app's keys drawer and stored only in your browser.
-
-- **Viewing needs none**: the SEC and File lanes both work without a key.
-- **Anthropic API key**: for AI analysis and summaries
-- **ElevenLabs API key** ([get one](https://try.elevenlabs.io/v9z3wzm97gk3)): for voice / read-aloud
-
-#### Deployment Requirements
-
-- Fork this repo
-- AWS account with IAM Identity Center (SSO)
-- S3 + CloudFront for static hosting, provisioned via CloudFormation
-- Custom domains are optional, from two repo variables: `VIEWER_DOMAIN` (the canonical name, in a public Route53 hosted zone; an apex domain also gets its `www.` form, redirected to it at the edge) and `VIEWER_LEGACY_DOMAIN` (an earlier name, served as an alias of the same distribution, never redirected, because a published `xbrlkit view` allows only the origin it was built with to read the report it serves)
-- Optional: a `CF_ANALYTICS_TOKEN` repo variable holding a Cloudflare Web Analytics site token; the deploy passes it to the build, and without it the site carries no beacon
-- A `production` GitHub environment on the repo (required reviewer; deployment refs `main`, `release/*` and `v*` tags): the deploy workflow's gate job binds it, so every production deploy pauses for approval
-- Optional: an `ACTIONS_TOKEN` secret able to push to the protected `main` and `release/*` branches; the release workflow pushes its version bump with it
+The `/mcp`, `/cli` and `/python` pages mirror the commands in the [xbrlkit README](https://github.com/RoboFinSystems/xbrlkit#readme); a change there is a change here.
 
 ## Architecture
 
-**Application Layer:**
+- **Vite, React 19 and TypeScript**: a single-page app that builds to static files, with no backend at runtime
+- **[`@robosystems/report-components`](https://www.npmjs.com/package/@robosystems/report-components)**: the `holon.jsonld` and `tavi.json` parsers and the statement rendering. This repository is the shell around it: search, file drop, fact inspection, chat, voice
+- **In-browser query**: N3.js and Comunica run SPARQL over a holon; jq compiled to WebAssembly runs over a Tavi model, in a Web Worker with a time limit
+- **AI and voice**: the Anthropic SDK and ElevenLabs, called from the browser with the reader's own keys
+- **Five lanes, no router**: the lane comes from the address (`src/pages/route.ts`) and each lane's title and share text from one table (`src/pages/routeMeta.ts`). The build writes an `index.html` per lane, so crawlers and link previews read each lane's own meta
 
-- Vite + React 19 + TypeScript single-page app
-- [`@robosystems/report-components`](https://github.com/RoboFinSystems/robosystems-report-components): the source-agnostic rendering library shared with the RoboLedger app and others; this repo is the shell around it
-- N3.js quad store + Comunica for in-browser RDF and SPARQL; jq-wasm (in a Web Worker) for in-browser jq over Tavi models
-- Anthropic SDK for AI; ElevenLabs for voice
-- The RoboSystems public data CDN for the SEC lane: the filer catalog and each filing's `tavi.json` / `holon.jsonld`, read with plain `fetch`
-- Five lanes without a router: the lane comes from the address (`src/pages/route.ts`), and each lane's title, description, canonical and share text come from one table (`src/pages/routeMeta.ts`)
+**On AWS:** S3 behind CloudFront, deployed from the CloudFormation template in [`cloudformation/`](cloudformation/) by GitHub Actions. A CloudFront Function maps each lane's path to its page and `/view` to the apex page. `create-release.yml` bumps the version, tags `v<version>` and dispatches `deploy.yml` at the tag; `test.yml` runs on pull requests.
 
-**Rendering:**
+## Documentation
 
-The render logic is not in this app; it lives in `@robosystems/report-components`, along with the `holon.jsonld` and `tavi.json` parsers. The viewer supplies the UI shell around them: file-drop and catalog-browse UX, fact inspection, chat, voice, and branding.
-
-**Infrastructure:**
-
-- Builds to pure static files, no backend at runtime. The build writes `index.html` for the SEC lane plus `file/`, `mcp/`, `cli/` and `python/` `index.html`, the same page with that lane's head, so crawlers and link previews read each lane's own meta without JavaScript
-- A CloudFront Function maps `/file`, `/mcp`, `/cli` and `/python` to those pages and `/view` to the apex page (and redirects `www.` to the apex); every other path is answered with the apex page
-- The share card `public/og.png` is rendered from `src/branding/og-card.html` with headless Chrome; the command is at the top of that file
-- Hosted on AWS S3 + CloudFront
-- CloudFormation-managed; deployed via GitHub Actions
-
-## CI/CD
-
-- **`create-release.yml`**: Cuts a release (manual dispatch: major, minor or patch). It bumps `package.json` on `main`, creates `release/<version>` and tags `v<version>` with generated release notes (curated notes in `.github/release-notes/v<version>.md` replace them), then dispatches `deploy.yml` at the tag unless told not to
-- **`deploy.yml`**: Static-site deploy to S3 + CloudFront (manual dispatch, approval-gated by the `production` environment). Run it from a release tag so the Deployments tab shows which version is live; a run from `main` is a one-off
-- **`test.yml`**: Automated testing on pull requests
+- **Using xbrlkit**: [MCP](https://xbrlkit.com/mcp) · [CLI](https://xbrlkit.com/cli) · [Python](https://xbrlkit.com/python)
+- **Technical docs**: [robosystems.ai/docs/technical](https://robosystems.ai/docs/technical)
+- **Related**: [xbrlkit](https://github.com/RoboFinSystems/xbrlkit) · [report-components](https://github.com/RoboFinSystems/robosystems-report-components) · [RoboSystems](https://github.com/RoboFinSystems/robosystems)
 
 ## Support
 
-- [Issues](https://github.com/RoboFinSystems/xbrlkit-viewer/issues)
-- [Documentation](https://robosystems.ai/docs/technical)
-- [Discussions](https://github.com/orgs/RoboFinSystems/discussions)
+- [Issues](https://github.com/RoboFinSystems/xbrlkit-viewer/issues) · [Discussions](https://github.com/orgs/RoboFinSystems/discussions) · [Projects](https://github.com/orgs/RoboFinSystems/projects)
 
 ## License
 
