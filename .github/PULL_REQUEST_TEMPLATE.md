@@ -32,3 +32,9 @@ No change
 
      Unit tests do not cover rendering, the keys drawer, in-browser SPARQL, or the AI agent — say
      whether you actually LOADED A REPORT, and in which mode. "Not run" is a valid answer. -->
+
+## Certification
+
+<!-- See .github/CONTRIBUTING.md, "Licensing and Certification". Asserts provenance, not a transfer of rights. -->
+
+- [ ] I have the right to submit this work under the MIT license, and do so. Where any part of it is owned by my employer, I have their permission.
